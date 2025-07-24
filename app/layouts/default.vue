@@ -4,9 +4,12 @@
     <header class="flex px-4">
       <span class="text-3xl font-bold">记忆回廊</span>
       <span class="flex-1" />
-      <Icon
-        name="material-symbols:add-circle-outline"
-        class="text-4xl text-primary" />
+      <UDrawer>
+        <Icon
+          name="material-symbols:add-circle-outline"
+          class="text-4xl text-primary" />
+        <template #content> <AgentEdit /> </template>
+      </UDrawer>
     </header>
     <main class="flex-1">
       <slot />
