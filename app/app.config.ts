@@ -5,7 +5,9 @@ export default defineAppConfig({
       neutral: "zinc",
     },
     button: {
-      slots: { base: "rounded-lg shadow-md shadow-primary/30" },
+      slots: {
+        base: "rounded-lg shadow-md shadow-primary/30 font-bold",
+      },
     },
   },
   icon: {

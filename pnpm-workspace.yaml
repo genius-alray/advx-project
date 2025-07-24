@@ -1,7 +1,9 @@
 onlyBuiltDependencies:
   - '@parcel/watcher'
   - '@tailwindcss/oxide'
+  - bufferutil
   - esbuild
+  - msw
   - sharp
   - unrs-resolver
   - vue-demi

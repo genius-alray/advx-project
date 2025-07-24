@@ -10,7 +10,6 @@ export default defineNuxtConfig({
     "@nuxtjs/mdc",
     "@pinia/nuxt",
     "@nuxt/ui",
-    "@compodium/nuxt",
     "@nuxt/image",
   ],
   css: ["~/assets/main.css"],
