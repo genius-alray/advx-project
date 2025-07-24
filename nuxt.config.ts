@@ -1,3 +1,5 @@
+import { defineNuxtConfig } from "nuxt/config";
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
@@ -9,8 +11,10 @@ export default defineNuxtConfig({
     "@pinia/nuxt",
     "@nuxt/ui",
     "@compodium/nuxt",
+    "@nuxt/image",
   ],
   css: ["~/assets/main.css"],
+  ui: { colorMode: false },
   nitro: {
     storage: {
       memory: {

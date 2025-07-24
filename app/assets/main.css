@@ -1,2 +1,10 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
+@theme static {
+  --color-amber-500: #b8956a;
+  --color-amber-50: #f6f1e8;
+  --ui-radius: 0.5rem;
+}
+body {
+  user-select: none;
+}
