@@ -8,6 +8,14 @@ export default defineNuxtConfig({
     "@nuxtjs/mdc",
     "@pinia/nuxt",
     "@nuxt/ui",
+    "@compodium/nuxt",
   ],
   css: ["~/assets/main.css"],
+  nitro: {
+    storage: {
+      memory: {
+        driver: "memory",
+      },
+    },
+  },
 });

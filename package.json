@@ -10,6 +10,7 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "@google/genai": "^1.11.0",
     "@nuxt/eslint": "1.7.0",
     "@nuxt/fonts": "0.11.4",
     "@nuxt/icon": "^1.15.0",
@@ -19,9 +20,11 @@
     "vue-router": "^4.5.1"
   },
   "devDependencies": {
-    "@nuxt/ui": "^3.2.0",
+    "@compodium/nuxt": "0.1.0-beta.11",
+    "@nuxt/ui": "https://pkg.pr.new/@nuxt/ui@35dbe6c",
     "@nuxtjs/mdc": "^0.17.2",
     "@pinia/nuxt": "^0.11.2",
-    "tailwindcss": "^4.1.11"
+    "tailwindcss": "^4.1.11",
+    "typescript": "^5.8.3"
   }
 }
