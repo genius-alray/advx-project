@@ -11,6 +11,7 @@ export default defineNuxtConfig({
     "@pinia/nuxt",
     "@nuxt/ui",
     "@nuxt/image",
+    "nuxt-auth-utils",
   ],
   css: ["~/assets/main.css"],
   ui: { colorMode: false },

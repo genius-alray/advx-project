@@ -18,8 +18,10 @@
     "eslint": "^9.31.0",
     "nuxt": "^4.0.1",
     "tailwindcss": "^4.1.11",
+    "nuxt-auth-utils": "0.5.20",
     "vue": "^3.5.17",
-    "vue-router": "^4.5.1"
+    "vue-router": "^4.5.1",
+    "zod": "^4.0.8"
   },
   "devDependencies": {
     "@gradio/client": "^1.15.6",
