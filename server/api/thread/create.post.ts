@@ -11,7 +11,8 @@ const bodySchema = z.object({
 export default defineEventHandler(async (event) => {
   const user = (await requireUserSession(event)).user;
   const body = await readValidatedBody(event, bodySchema.parse);
-  const threadId = await threadManager.instance.addThread(user.id, body.roleId);
+  const threadId = genUUID4();
+  await threadManager.instance.addThread(user.id, body.roleId, threadId);
   return {
     id: threadId,
   };

@@ -4,8 +4,21 @@ import type { Role } from "~~/shared/types/role";
  * 赛博亲人管理
  */
 export class roleManager extends Singleton<roleManager>() {
-  userRoles = useStorage<string[]>("userRoles");
-  roles = useStorage<Role>("roles");
+  private userRoles = useStorage<string[]>("userRoles");
+  private roles = useStorage<Role>("roles");
+
+  private constructor() {
+    super();
+    this.addRole("admin", {
+      id: "test_role",
+      belongsTo: "admin",
+      name: "测试角色",
+      voiceId: "default",
+      description: "测试角色",
+      avatar: "",
+      background: "",
+    });
+  }
 
   async addRole(userId: string, role: Role) {
     let roles = await this.userRoles.get(userId);

@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
       message: "thread not found",
     });
   }
-  return await threadManager.instance.addMessage(event.context.params!.id, {
+  await threadManager.instance.addMessage(event.context.params!.id, {
     id: genUUID4(),
     sender: "ai",
     senderId: thread.roleId,

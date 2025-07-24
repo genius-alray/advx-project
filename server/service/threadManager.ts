@@ -1,5 +1,3 @@
-import { genUUID4 } from "~~/shared/utils/uuid4";
-
 /**
  * 对话管理
  */
@@ -7,8 +5,11 @@ export class threadManager extends Singleton<threadManager>() {
   private userThreads = useStorage<string[]>("userThreads");
   private threads = useStorage<Thread>("threads");
 
-  async addThread(userId: string, roleId: string) {
-    const threadId = genUUID4();
+  private constructor() {
+    super();
+    this.addThread("admin", "test_role", "test_thread");
+  }
+  async addThread(userId: string, roleId: string, threadId: string) {
     let threads = await this.userThreads.get(userId);
     if (!threads) {
       threads = [];
@@ -22,7 +23,6 @@ export class threadManager extends Singleton<threadManager>() {
       title: "新对话",
       content: [],
     });
-    return threadId;
   }
 
   async removeThread(userId: string, threadId: string) {

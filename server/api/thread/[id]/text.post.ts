@@ -11,7 +11,7 @@ const bodySchema = z.object({
 export default defineEventHandler(async (event) => {
   const user = (await requireUserSession(event)).user;
   const body = await readValidatedBody(event, bodySchema.parse);
-  return await threadManager.instance.addMessage(event.context.params!.id, {
+  await threadManager.instance.addMessage(event.context.params!.id, {
     id: genUUID4(),
     sender: "user",
     senderId: user.id,

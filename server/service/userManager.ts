@@ -2,7 +2,16 @@
  * 用户管理
  */
 export class userManager extends Singleton<userManager>() {
-  users = useStorage<User>("users");
+  private users = useStorage<User>("users");
+
+  private constructor() {
+    super();
+    this.addUser({
+      id: "admin",
+      name: "admin",
+      password: "123123",
+    });
+  }
 
   async addUser(user: { id: string; name: string; password: string }) {
     if (await this.users.get(user.id)) {
