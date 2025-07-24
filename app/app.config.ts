@@ -20,7 +20,7 @@ export default defineAppConfig({
       },
       variants: {
         variant: {
-          outline: "bg-primary/30 ring-transparent text-primary font-black",
+          outline: "bg-primary/30  text-primary font-black ring-transparent",
         },
       },
     },
