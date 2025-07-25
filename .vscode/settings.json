@@ -10,6 +10,9 @@
     ["ui:\\s*{([^)]*)\\s*}", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
   ],
   "cSpell.words": [
-    "Nuxt"
+    "deepseek",
+    "iconify",
+    "Nuxt",
+    "nuxtjs"
   ]
 }

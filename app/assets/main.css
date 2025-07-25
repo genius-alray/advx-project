@@ -5,6 +5,59 @@
   --color-amber-50: #f6f1e8;
   --ui-radius: 0.5rem;
 }
+
+/* 响应式布局工具类 */
+@layer utilities {
+  /* 防止文本溢出的工具类 */
+  .text-overflow-safe {
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+
+  /* 容器宽度限制 */
+  .container-safe {
+    width: 100%;
+    max-width: 28rem; /* max-w-md */
+    margin-left: auto;
+    margin-right: auto;
+    overflow: hidden;
+  }
+
+  /* Flexbox 安全布局 */
+  .flex-safe {
+    display: flex;
+    min-width: 0;
+  }
+
+  .flex-safe-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-width: 0;
+  }
+
+  /* 文本截断 */
+  .text-truncate-safe {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+  }
+
+  /* 按钮组安全布局 */
+  .button-group-safe {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  /* 消息气泡安全宽度 */
+  .message-bubble {
+    max-width: 75%;
+    word-break: break-word;
+    white-space: pre-wrap;
+  }
+}
 body {
   user-select: none;
   /* font-size: x-large; */
