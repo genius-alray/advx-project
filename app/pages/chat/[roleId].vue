@@ -1,14 +1,14 @@
 <script setup lang="ts">
+import type { Role } from "~~/shared/types/role";
+import type { Thread } from "~~/shared/types/thread";
+import type { Message } from "~~/shared/types/message";
+
 definePageMeta({ layout: false });
 
 const route = useRoute();
 const roleId = route.params.roleId as string;
 
-const { fetchRoles } = useRoles();
-const { createThread, fetchThread, sendMessage, getAIReply, pending, error } =
-  useThreads();
-const { isAuthenticated } = useAuth();
-
+// 简单的响应式状态
 const role = ref<Role | null>(null);
 const thread = ref<Thread | null>(null);
 const messages = ref<Message[]>([]);
@@ -18,21 +18,11 @@ const isSending = ref(false);
 const chatContainer = ref<HTMLElement>();
 const lastFailedMessage = ref<string | null>(null);
 
-// Redirect to login if not authenticated
-watch(
-  isAuthenticated,
-  (authenticated) => {
-    if (!authenticated) {
-      navigateTo("/login");
-    }
-  },
-  { immediate: true }
-);
-
+// 直接获取角色数据
 const loadRole = async () => {
   try {
-    const roles = await fetchRoles();
-    role.value = roles.find((r) => r.id === roleId) || null;
+    const roles = await $fetch<Role[]>("/api/role/all");
+    role.value = roles.find((r: Role) => r.id === roleId) || null;
     if (!role.value) {
       throw new Error("Role not found");
     }
@@ -42,15 +32,20 @@ const loadRole = async () => {
   }
 };
 
-const loadOrCreateThread = async () => {
+// 直接创建新对话
+const createNewThread = async () => {
   if (!role.value) return;
 
   try {
-    // For now, create a new thread each time
-    // In a real app, you'd want to manage existing threads
-    const result = await createThread(roleId);
+    const result = await $fetch<{ id: string }>("/api/thread/create", {
+      method: "POST",
+      body: { roleId },
+    });
+
     if (result) {
-      const threadData = await fetchThread(result.id);
+      const threadData = await $fetch<Thread>(
+        `/api/thread/${result.id}/content`
+      );
       if (threadData) {
         thread.value = threadData;
         messages.value = threadData.content || [];
@@ -84,14 +79,17 @@ const handleSendMessage = async () => {
       scrollToBottom();
     });
 
-    // Send message to backend
-    const sendSuccess = await sendMessage(thread.value.id, messageText);
-    if (!sendSuccess) {
-      throw new Error("Failed to send message");
-    }
+    // 直接发送消息到后端
+    await $fetch(`/api/thread/${thread.value.id}/text`, {
+      method: "POST",
+      body: { message: messageText },
+    });
 
-    // Get AI reply
-    const replyResult = await getAIReply(thread.value.id);
+    // 直接获取 AI 回复
+    const replyResult = await $fetch<{ success: boolean; message?: string }>(
+      `/api/thread/${thread.value.id}/reply`
+    );
+
     if (replyResult.success && replyResult.message) {
       // Add AI message to local state immediately
       const aiMessage: Message = {
@@ -108,8 +106,10 @@ const handleSendMessage = async () => {
         scrollToBottom();
       });
     } else {
-      // If AI reply failed, refresh thread to get any fallback message
-      const updatedThread = await fetchThread(thread.value.id);
+      // 如果 AI 回复失败，重新获取对话内容
+      const updatedThread = await $fetch<Thread>(
+        `/api/thread/${thread.value.id}/content`
+      );
       if (updatedThread) {
         messages.value = updatedThread.content || [];
         nextTick(() => {
@@ -154,35 +154,18 @@ const retryLastMessage = async () => {
   await handleSendMessage();
 };
 
-// 初始化数据加载函数
-const initializeChat = async () => {
+// 页面初始化 - 每次进入页面都重新加载所有数据
+onMounted(async () => {
   isLoading.value = true;
   try {
     await loadRole();
-    await loadOrCreateThread();
+    await createNewThread();
   } finally {
     isLoading.value = false;
     nextTick(() => {
       scrollToBottom();
     });
   }
-};
-
-// 使用页面刷新 composable，但聊天页面需要特殊处理
-// 因为每次切换都会创建新的 thread，所以只在路由参数变化时重新初始化
-watch(
-  () => route.params.roleId,
-  async (newRoleId, oldRoleId) => {
-    if (newRoleId && newRoleId !== oldRoleId) {
-      await initializeChat();
-    }
-  },
-  { immediate: true }
-);
-
-// 组件挂载时初始化
-onMounted(async () => {
-  await initializeChat();
 });
 </script>
 

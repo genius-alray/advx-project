@@ -1,16 +1,7 @@
 <script setup lang="ts">
 const emits = defineEmits(["close", "created"]);
 
-// Props interface for future extensibility
-// interface Props {
-//   editingRole?: unknown;
-// }
-
-const { createRole, pending, error } = useRoles();
-const { fetchUserVoiceList } = useVoices();
-const { uploadAvatar } = useAvatars();
-const { isAuthenticated } = useAuth();
-
+// 简单的响应式状态
 const form = reactive({
   name: "",
   description: "",
@@ -24,12 +15,15 @@ const avatarFile = ref<File | null>(null);
 const userVoices = ref<{ id: string; name: string }[]>([]);
 const isLoadingVoices = ref(false);
 const isUploadingAvatar = ref(false);
+const isCreating = ref(false);
 
-// 加载用户语音列表
+// 直接加载用户语音列表
 const loadUserVoices = async () => {
   isLoadingVoices.value = true;
   try {
-    userVoices.value = await fetchUserVoiceList();
+    userVoices.value = await $fetch<{ id: string; name: string }[]>(
+      "/api/voice/all"
+    );
   } catch (err) {
     console.error("Failed to load user voices:", err);
   } finally {
@@ -62,16 +56,22 @@ const handleAvatarUpload = async (file: unknown) => {
   formError.value = null;
 
   try {
-    // 上传头像
-    const result = await uploadAvatar(selectedFile);
-    if (result) {
-      form.avatar = result.url;
+    // 直接在客户端转换为 base64 URL
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target?.result as string;
+      form.avatar = dataUrl;
       avatarFile.value = selectedFile;
-    }
+      isUploadingAvatar.value = false;
+    };
+    reader.onerror = () => {
+      formError.value = "头像处理失败，请重试";
+      isUploadingAvatar.value = false;
+    };
+    reader.readAsDataURL(selectedFile);
   } catch (err) {
-    console.error("Failed to upload avatar:", err);
-    formError.value = "头像上传失败，请重试";
-  } finally {
+    console.error("Failed to process avatar:", err);
+    formError.value = "头像处理失败，请重试";
     isUploadingAvatar.value = false;
   }
 };
@@ -87,39 +87,15 @@ const voiceOptions = computed(() => {
   ];
 });
 
-// 监听认证状态变化，登录后加载语音列表
-watch(
-  isAuthenticated,
-  (authenticated) => {
-    if (authenticated) {
-      loadUserVoices();
-    }
-  },
-  { immediate: true }
-);
-
-// 组件挂载时加载语音列表和设置页面可见性监听
-onMounted(() => {
-  if (isAuthenticated.value) {
-    loadUserVoices();
-  }
-
-  // 监听页面可见性变化，当页面重新可见时刷新语音列表
-  const handleVisibilityChange = () => {
-    if (!document.hidden && isAuthenticated.value) {
-      loadUserVoices();
-    }
-  };
-
-  document.addEventListener("visibilitychange", handleVisibilityChange);
-
-  // 清理事件监听器
-  onUnmounted(() => {
-    document.removeEventListener("visibilitychange", handleVisibilityChange);
-  });
+// 组件初始化 - 加载语音列表
+onMounted(async () => {
+  await loadUserVoices();
 });
 
+// 直接提交创建角色
 const handleSubmit = async () => {
+  if (isCreating.value) return;
+
   formError.value = null;
 
   if (!form.name.trim()) {
@@ -127,28 +103,39 @@ const handleSubmit = async () => {
     return;
   }
 
-  const result = await createRole({
-    name: form.name.trim(),
-    description: form.description.trim() || undefined,
-    avatar: form.avatar.trim() || undefined,
-    background: form.background.trim() || undefined,
-    voiceId: form.voiceId || undefined,
-  });
-
-  if (result) {
-    // Reset form first
-    Object.assign(form, {
-      name: "",
-      description: "",
-      avatar: "",
-      background: "",
-      voiceId: null,
+  isCreating.value = true;
+  try {
+    const result = await $fetch<{ id: string }>("/api/role/create", {
+      method: "POST",
+      body: {
+        name: form.name.trim(),
+        description: form.description.trim() || undefined,
+        avatar: form.avatar.trim() || undefined,
+        background: form.background.trim() || undefined,
+        voiceId: form.voiceId || undefined,
+      },
     });
-    avatarFile.value = null;
 
-    // Emit events to parent
-    emits("created", result);
-    emits("close");
+    if (result) {
+      // Reset form first
+      Object.assign(form, {
+        name: "",
+        description: "",
+        avatar: "",
+        background: "",
+        voiceId: null,
+      });
+      avatarFile.value = null;
+
+      // Emit events to parent
+      emits("created", result);
+      emits("close");
+    }
+  } catch (err) {
+    console.error("Failed to create role:", err);
+    formError.value = "创建角色失败，请重试";
+  } finally {
+    isCreating.value = false;
   }
 };
 </script>
@@ -175,7 +162,7 @@ const handleSubmit = async () => {
         class="w-full"
         size="xl"
         required
-        :disabled="pending"
+        :disabled="isCreating"
       />
 
       <UInput
@@ -183,7 +170,7 @@ const handleSubmit = async () => {
         placeholder="身份/描述"
         class="w-full"
         size="xl"
-        :disabled="pending"
+        :disabled="isCreating"
       />
 
       <UTextarea
@@ -193,7 +180,7 @@ const handleSubmit = async () => {
         :rows="3"
         class="w-full"
         size="xl"
-        :disabled="pending"
+        :disabled="isCreating"
       />
 
       <!-- 语音选择 -->
@@ -206,16 +193,16 @@ const handleSubmit = async () => {
           class="w-full text-primary"
           size="xl"
           color="primary"
-          :disabled="pending || isLoadingVoices"
+          :disabled="isCreating || isLoadingVoices"
           :loading="isLoadingVoices"
         />
       </div>
 
       <UAlert
-        v-if="error || formError"
+        v-if="formError"
         color="error"
         variant="soft"
-        :title="(error || formError) ?? ''"
+        :title="formError"
         class="mb-4"
       />
 
@@ -224,8 +211,8 @@ const handleSubmit = async () => {
           type="submit"
           icon="material-symbols:check-circle"
           size="xl"
-          :loading="pending"
-          :disabled="!form.name.trim()"
+          :loading="isCreating"
+          :disabled="!form.name.trim() || isCreating"
           class="w-full"
         >
           确认

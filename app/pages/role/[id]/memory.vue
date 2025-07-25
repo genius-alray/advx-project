@@ -9,17 +9,7 @@ definePageMeta({
 const route = useRoute();
 const roleId = route.params.id as string;
 
-const { fetchRoles } = useRoles();
-const {
-  addKnowledge,
-  addBatchKnowledge,
-  fetchRoleKnowledge,
-  updateKnowledge,
-  deleteKnowledge,
-  pending,
-  error,
-} = useRoleKnowledge();
-
+// 简单的响应式状态
 const role = ref<Role | null>(null);
 const knowledge = ref<Knowledge[]>([]);
 const newMemory = ref("");
@@ -29,11 +19,14 @@ const isUploading = ref(false);
 const uploadError = ref<string | null>(null);
 const editingKnowledge = ref<Knowledge | null>(null);
 const editContent = ref("");
+const error = ref<string | null>(null);
+const isSaving = ref(false);
 
+// 直接获取角色数据
 const loadRole = async () => {
   try {
-    const roles = await fetchRoles();
-    role.value = roles.find((r) => r.id === roleId) || null;
+    const roles = await $fetch<Role[]>("/api/role/all");
+    role.value = roles.find((r: Role) => r.id === roleId) || null;
     if (!role.value) {
       throw new Error("Role not found");
     }
@@ -43,19 +36,24 @@ const loadRole = async () => {
   }
 };
 
+// 直接获取记忆数据
 const loadKnowledge = async () => {
   if (!roleId) return;
 
   isLoading.value = true;
   try {
-    knowledge.value = await fetchRoleKnowledge(roleId);
+    knowledge.value = await $fetch<Knowledge[]>(
+      `/api/role/${roleId}/knowledge`
+    );
   } catch (err) {
     console.error("Failed to load knowledge:", err);
+    error.value = "加载记忆失败";
   } finally {
     isLoading.value = false;
   }
 };
 
+// 直接添加记忆
 const handleAddMemory = async () => {
   if (!newMemory.value.trim() || isAdding.value) return;
 
@@ -64,18 +62,21 @@ const handleAddMemory = async () => {
   isAdding.value = true;
 
   try {
-    const success = await addKnowledge(roleId, memoryText, "text");
+    await $fetch(`/api/role/${roleId}/knowledge`, {
+      method: "POST",
+      body: {
+        content: memoryText,
+        type: "text",
+      },
+    });
 
-    if (success) {
-      await loadKnowledge(); // Refresh the list
-    } else {
-      alert("添加记忆失败，请检查网络连接或稍后重试");
-    }
+    await loadKnowledge(); // 重新加载数据
   } catch (err) {
     console.error("Failed to add memory:", err);
     alert(
       `添加记忆时发生错误: ${err instanceof Error ? err.message : "未知错误"}`
     );
+    newMemory.value = memoryText; // 恢复输入内容
   } finally {
     isAdding.value = false;
   }
@@ -123,14 +124,16 @@ const handleFileUpload = async (event: Event) => {
       throw new Error("文件内容为空，请检查文件是否包含有效内容");
     }
 
-    const success = await addBatchKnowledge(roleId, lines, "file");
-    if (success) {
-      await loadKnowledge();
-      // Show success message
-      uploadError.value = null;
-    } else {
-      throw new Error("上传失败，请稍后重试");
-    }
+    await $fetch(`/api/role/${roleId}/knowledge/batch`, {
+      method: "POST",
+      body: {
+        contents: lines,
+        type: "file",
+      },
+    });
+
+    await loadKnowledge(); // 重新加载数据
+    uploadError.value = null;
   } catch (err) {
     console.error("Failed to upload file:", err);
     uploadError.value =
@@ -150,33 +153,43 @@ const cancelEdit = () => {
   editContent.value = "";
 };
 
+// 直接保存编辑
 const saveEdit = async () => {
-  if (!editingKnowledge.value || !editContent.value.trim()) return;
+  if (!editingKnowledge.value || !editContent.value.trim() || isSaving.value)
+    return;
 
+  isSaving.value = true;
   try {
-    const success = await updateKnowledge(
-      editingKnowledge.value.id,
-      editContent.value.trim()
-    );
-    if (success) {
-      await loadKnowledge();
-      cancelEdit();
-    }
+    await $fetch(`/api/knowledge/${editingKnowledge.value.id}`, {
+      method: "PUT",
+      body: {
+        content: editContent.value.trim(),
+      },
+    });
+
+    await loadKnowledge(); // 重新加载数据
+    cancelEdit();
   } catch (err) {
     console.error("Failed to update knowledge:", err);
+    alert("更新记忆失败，请重试");
+  } finally {
+    isSaving.value = false;
   }
 };
 
+// 直接删除记忆
 const handleDelete = async (knowledgeId: string) => {
   if (!confirm("确定要删除这条记忆吗？")) return;
 
   try {
-    const success = await deleteKnowledge(knowledgeId);
-    if (success) {
-      await loadKnowledge();
-    }
+    await $fetch(`/api/knowledge/${knowledgeId}`, {
+      method: "DELETE",
+    });
+
+    await loadKnowledge(); // 重新加载数据
   } catch (err) {
     console.error("Failed to delete knowledge:", err);
+    alert("删除记忆失败，请重试");
   }
 };
 
@@ -194,15 +207,6 @@ const formatDate = (dateString: string) => {
   });
 };
 
-// 加载所有数据的函数
-const loadAllData = async () => {
-  await loadRole();
-  await loadKnowledge();
-};
-
-// 使用页面刷新 composable 确保切换页面时重新加载数据
-usePageRefresh(loadAllData);
-
 // 文件输入引用
 const fileInputRef = ref<HTMLInputElement | null>(null);
 
@@ -210,6 +214,12 @@ const fileInputRef = ref<HTMLInputElement | null>(null);
 const triggerFileUpload = () => {
   fileInputRef.value?.click();
 };
+
+// 页面初始化 - 每次进入页面都重新加载所有数据
+onMounted(async () => {
+  await loadRole();
+  await loadKnowledge();
+});
 </script>
 
 <template>
@@ -348,7 +358,7 @@ const triggerFileUpload = () => {
             <div class="flex flex-wrap gap-2">
               <UButton
                 size="xs"
-                :loading="pending"
+                :loading="isSaving"
                 class="flex-shrink-0"
                 @click="saveEdit"
               >
