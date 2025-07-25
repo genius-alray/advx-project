@@ -5,5 +5,5 @@ import { voiceManager } from "~~/server/service/voiceManager";
  */
 export default defineEventHandler(async (event) => {
   const user = (await requireUserSession(event)).user;
-  return await voiceManager.instance.getUserVoice(user.id);
+  return await voiceManager.instance.getUserVoiceList(user.id);
 });

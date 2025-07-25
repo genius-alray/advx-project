@@ -295,7 +295,7 @@ onMounted(async () => {
       </div>
 
       <!-- Message input -->
-      <div class="p-4 bg-white border-t flex-shrink-0">
+      <div class="p-4 bg-white flex-shrink-0">
         <!-- Retry button for failed messages -->
         <div
           v-if="lastFailedMessage"
