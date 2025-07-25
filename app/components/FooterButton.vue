@@ -12,8 +12,8 @@ const handleClick = async (event: Event) => {
 <template>
   <a
     :href="target"
-    @click="handleClick"
     class="h-20 flex flex-1 flex-col justify-center items-center cursor-pointer"
+    @click="handleClick"
   >
     <Icon
       :name="route.path == target ? icon : icon.replace('-color', '')"

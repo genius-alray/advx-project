@@ -376,10 +376,12 @@ export const useRoleKnowledge = () => {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const fetchRoleKnowledge = async (roleId: string): Promise<any[]> => {
     try {
       pending.value = true;
       error.value = null;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const knowledge = await $fetch<any[]>(`/api/role/${roleId}/knowledge`);
       return knowledge || [];
     } catch (err) {
