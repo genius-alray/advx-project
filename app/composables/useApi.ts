@@ -1,7 +1,3 @@
-import type { Role } from "~/shared/types/role";
-import type { Thread } from "~/shared/types/thread";
-import type { Message } from "~/shared/types/message";
-
 /**
  * API composable for role management
  */

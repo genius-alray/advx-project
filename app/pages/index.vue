@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import type { Role } from "~~/shared/types/role";
-
 definePageMeta({
   middleware: "auth",
 });

@@ -1,7 +1,4 @@
 <script setup lang="ts">
-import type { Thread } from "~~/shared/types/thread";
-import type { Role } from "~~/shared/types/role";
-
 const { fetchThreads, deleteThread, pending, error } = useThreads();
 const { fetchRoles } = useRoles();
 const { isAuthenticated } = useAuth();
