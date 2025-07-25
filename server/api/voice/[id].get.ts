@@ -6,22 +6,26 @@ import { voiceManager } from "~~/server/service/voiceManager";
 export default defineEventHandler(async (event) => {
   const user = (await requireUserSession(event)).user;
   const voiceId = event.context.params!.id;
-  
+
   const voice = await voiceManager.instance.getVoice(voiceId);
-  
+
   if (!voice) {
     throw createError({
       statusCode: 404,
       statusMessage: "Voice not found",
     });
   }
-  
+
   // 设置响应头
   setHeader(event, "Content-Type", voice.type || "audio/mpeg");
   setHeader(event, "Content-Length", voice.size.toString());
   setHeader(event, "Cache-Control", "public, max-age=31536000");
-  setHeader(event, "Content-Disposition", `attachment; filename="voice-${voiceId}.${getFileExtension(voice.type)}"`);
-  
+  setHeader(
+    event,
+    "Content-Disposition",
+    `attachment; filename="voice-${voiceId}.${getFileExtension(voice.type)}"`
+  );
+
   return voice;
 });
 

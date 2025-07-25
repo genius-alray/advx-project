@@ -3,14 +3,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "nuxt build",
+    "build": "nuxt build --preset=cloudflare-pages",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare",
-    "test": "vitest",
-    "test:ui": "vitest --ui",
-    "test:coverage": "vitest --coverage"
+    "postinstall": "nuxt prepare"
   },
   "dependencies": {
     "@google/genai": "^1.11.0",
@@ -18,11 +15,13 @@
     "@nuxt/fonts": "0.11.4",
     "@nuxt/icon": "^1.15.0",
     "@nuxt/image": "1.10.0",
+    "@pinia/nuxt": "0.11.2",
     "animejs": "^4.1.1",
     "eslint": "^9.31.0",
     "nuxt": "^4.0.1",
     "nuxt-auth-utils": "0.5.20",
     "openai": "^5.10.2",
+    "pinia": "^3.0.3",
     "tailwindcss": "^4.1.11",
     "vue": "^3.5.17",
     "vue-router": "^4.5.1",
@@ -33,9 +32,8 @@
     "@iconify-json/material-symbols": "^1.2.30",
     "@iconify-json/streamline-plump": "^1.2.0",
     "@iconify-json/streamline-plump-color": "^1.2.0",
-    "@nuxt/ui": "https://pkg.pr.new/@nuxt/ui@35dbe6c",
+    "@nuxt/ui": "^3.3.0",
     "@nuxtjs/mdc": "^0.17.2",
-    "@pinia/nuxt": "^0.11.2",
     "typescript": "^5.8.3"
   }
 }

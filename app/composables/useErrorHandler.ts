@@ -1,47 +1,40 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Global error handler composable
  */
 export const useErrorHandler = () => {
-  const toast = useToast();
-
   const handleError = (error: unknown, context?: string) => {
-    console.error(`Error${context ? ` in ${context}` : ''}:`, error);
-    
+    console.error(`Error${context ? ` in ${context}` : ""}:`, error);
+
     let message = "发生了未知错误";
-    
+
     if (error instanceof Error) {
       message = error.message;
-    } else if (typeof error === 'string') {
+    } else if (typeof error === "string") {
       message = error;
-    } else if (error && typeof error === 'object' && 'message' in error) {
+    } else if (error && typeof error === "object" && "message" in error) {
       message = (error as any).message;
     }
 
-    // Show toast notification
-    toast.add({
-      title: "错误",
-      description: message,
-      color: "red",
-      timeout: 5000,
-    });
+    // For now, use console.error and alert until toast is properly configured
+    console.error("Error:", message);
+    if (import.meta.client) {
+      alert(`错误: ${message}`);
+    }
   };
 
   const handleSuccess = (message: string) => {
-    toast.add({
-      title: "成功",
-      description: message,
-      color: "green",
-      timeout: 3000,
-    });
+    console.log("Success:", message);
+    if (import.meta.client) {
+      alert(`成功: ${message}`);
+    }
   };
 
   const handleInfo = (message: string) => {
-    toast.add({
-      title: "提示",
-      description: message,
-      color: "blue",
-      timeout: 3000,
-    });
+    console.info("Info:", message);
+    if (import.meta.client) {
+      alert(`提示: ${message}`);
+    }
   };
 
   return {
