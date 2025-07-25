@@ -1,4 +1,6 @@
-@import "tailwindcss";
+@import "tailwindcss/preflight";
+@import "tailwindcss/theme";
+@import "tailwindcss/utilities";
 @import "@nuxt/ui";
 @theme static {
   --color-amber-500: #b8956a;

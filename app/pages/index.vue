@@ -1,29 +1,41 @@
 <script setup lang="ts">
+import type { Role } from "~~/shared/types/role";
+
 definePageMeta({
   middleware: "auth",
 });
 
-const { fetchRoles, deleteRole, error } = useRoles();
-const { isAuthenticated } = useAuth();
-
+// 简单的响应式状态
 const roles = ref<Role[]>([]);
 const isLoading = ref(true);
+const error = ref<string | null>(null);
 
+// 直接获取角色数据
 const loadRoles = async () => {
   isLoading.value = true;
+  error.value = null;
   try {
-    roles.value = await fetchRoles();
+    roles.value = await $fetch<Role[]>("/api/role/all");
   } catch (err) {
     console.error("Failed to load roles:", err);
+    error.value = "加载角色失败";
   } finally {
     isLoading.value = false;
   }
 };
 
+// 直接删除角色
 const handleDeleteRole = async (roleId: string) => {
-  const success = await deleteRole(roleId);
-  if (success) {
-    await loadRoles(); // Refresh the list
+  if (!confirm("确定要删除这个角色吗？")) return;
+
+  try {
+    await $fetch(`/api/role/${roleId}`, {
+      method: "DELETE",
+    });
+    await loadRoles(); // 重新加载数据
+  } catch (err) {
+    console.error("Failed to delete role:", err);
+    alert("删除角色失败，请重试");
   }
 };
 
@@ -37,23 +49,10 @@ const handleMemoryClick = (role: Role) => {
   navigateTo(`/role/${role.id}/memory`);
 };
 
-// 监听认证状态变化，登录后加载角色列表
-watch(
-  isAuthenticated,
-  (authenticated) => {
-    if (authenticated) {
-      loadRoles();
-    }
-  },
-  { immediate: true }
-);
-
-// 使用页面刷新 composable 确保切换页面时重新加载数据
-usePageRefresh(loadRoles);
-
-// 监听选项卡刷新事件
-const { onTabRefresh } = useTabNavigation();
-onTabRefresh(loadRoles);
+// 页面初始化 - 每次进入页面都重新加载所有数据
+onMounted(async () => {
+  await loadRoles();
+});
 </script>
 
 <template>
@@ -99,9 +98,7 @@ onTabRefresh(loadRoles);
         <span class="text-2xl">{{ role.name }}</span>
         <span class="text-md text-black/50">{{ role.description }}</span>
       </div>
-      <div
-        class="flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity"
-      >
+      <div class="flex space-x-2 opacity-100 transition-opacity">
         <UButton
           icon="material-symbols:auto-stories"
           variant="ghost"
