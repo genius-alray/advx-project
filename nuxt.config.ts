@@ -15,6 +15,14 @@ export default defineNuxtConfig({
   ],
   css: ["~/assets/main.css"],
   ui: { colorMode: false },
+  runtimeConfig: {
+    // Private keys (only available on the server-side)
+    deepseekApiKey: process.env.DEEPSEEK_API_KEY,
+    // Public keys that are exposed to the client-side
+    public: {
+      // Add any public config here if needed
+    },
+  },
   nitro: {
     storage: {
       memory: {
