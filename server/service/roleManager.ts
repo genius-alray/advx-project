@@ -1,5 +1,3 @@
-import type { Role } from "~~/shared/types/role";
-
 /**
  * 赛博亲人管理
  */

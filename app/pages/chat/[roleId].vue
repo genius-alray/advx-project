@@ -1,8 +1,4 @@
 <script setup lang="ts">
-import type { Role } from "~/shared/types/role";
-import type { Thread } from "~/shared/types/thread";
-import type { Message } from "~/shared/types/message";
-
 definePageMeta({ layout: false });
 
 const route = useRoute();
