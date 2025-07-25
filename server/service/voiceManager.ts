@@ -23,11 +23,14 @@ export class voiceManager extends Singleton<voiceManager>() {
   }
 
   async getUserVoice(userId: string) {
-    return (
-      (await this.userVoices.get(userId))?.map(async (id) => {
-        await this.getVoice(id);
-      }) ?? []
+    const voiceIds = await this.userVoices.get(userId);
+    if (!voiceIds) {
+      return [];
+    }
+    const voices = await Promise.all(
+      voiceIds.map(async (id) => await this.getVoice(id))
     );
+    return voices.filter((voice) => voice !== null);
   }
 
   async getUserVoices(userId: string) {

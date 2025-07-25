@@ -40,11 +40,14 @@ export class threadManager extends Singleton<threadManager>() {
   }
 
   async getUserThreads(userId: string) {
-    return (
-      (await this.userThreads.get(userId))?.map(async (id) => {
-        await this.getThread(id);
-      }) ?? []
+    const threadIds = await this.userThreads.get(userId);
+    if (!threadIds) {
+      return [];
+    }
+    const threads = await Promise.all(
+      threadIds.map(async (id) => await this.getThread(id))
     );
+    return threads.filter((thread) => thread !== null);
   }
 
   async setThreadTitle(userId: string, threadId: string, title: string) {

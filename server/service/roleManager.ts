@@ -35,11 +35,14 @@ export class roleManager extends Singleton<roleManager>() {
   }
 
   async getUserRoles(userId: string) {
-    return (
-      (await this.userRoles.get(userId))?.map(async (id) => {
-        await this.getRole(id);
-      }) ?? []
+    const roleIds = await this.userRoles.get(userId);
+    if (!roleIds) {
+      return [];
+    }
+    const roles = await Promise.all(
+      roleIds.map(async (id) => await this.getRole(id))
     );
+    return roles.filter((role) => role !== null);
   }
 
   async removeRole(userId: string, roleId: string) {
