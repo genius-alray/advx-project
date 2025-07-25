@@ -1,3 +1,7 @@
+<script setup lang="ts">
+const emits = defineEmits(["update:modelValue"]);
+</script>
+
 <template>
   <div class="flex flex-col justify-center items-center p-8 space-y-2">
     <Icon
