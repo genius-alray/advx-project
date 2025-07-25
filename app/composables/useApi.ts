@@ -242,11 +242,90 @@ export const useVoices = () => {
     }
   };
 
+  const fetchUserVoiceList = async (): Promise<
+    { id: string; name: string }[]
+  > => {
+    try {
+      pending.value = true;
+      error.value = null;
+      const voiceList = await $fetch<{ id: string; name: string }[]>(
+        "/api/voice/list"
+      );
+      return voiceList || [];
+    } catch (err) {
+      error.value =
+        err instanceof Error ? err.message : "Failed to fetch voice list";
+      return [];
+    } finally {
+      pending.value = false;
+    }
+  };
+
+  const fetchUserVoiceDetails = async (): Promise<
+    { id: string; name: string; size: number; type: string; url: string }[]
+  > => {
+    try {
+      pending.value = true;
+      error.value = null;
+      const voiceDetails = await $fetch<
+        { id: string; name: string; size: number; type: string; url: string }[]
+      >("/api/voice/details");
+      return voiceDetails || [];
+    } catch (err) {
+      error.value =
+        err instanceof Error ? err.message : "Failed to fetch voice details";
+      return [];
+    } finally {
+      pending.value = false;
+    }
+  };
+
   return {
     pending: readonly(pending),
     error: readonly(error),
     uploadVoice,
     fetchUserVoices,
+    fetchUserVoiceList,
+    fetchUserVoiceDetails,
+  };
+};
+
+/**
+ * API composable for avatar management
+ */
+export const useAvatars = () => {
+  const pending = ref(false);
+  const error = ref<string | null>(null);
+
+  const uploadAvatar = async (
+    file: File
+  ): Promise<{ id: string; url: string } | null> => {
+    try {
+      pending.value = true;
+      error.value = null;
+      const formData = new FormData();
+      formData.append("file", file);
+      const result = await $fetch<{ id: string; url: string }>(
+        "/api/avatar/upload",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+      return result;
+    } catch (err) {
+      error.value =
+        err instanceof Error ? err.message : "Failed to upload avatar";
+      return null;
+    } finally {
+      pending.value = false;
+    }
+  };
+
+  return {
+    pending: readonly(pending),
+    error: readonly(error),
+    uploadAvatar,
   };
 };
 

@@ -12,11 +12,17 @@ const name = computed(
 
 const isDrawerOpen = ref(false);
 
-const handleRoleCreated = () => {
+const handleRoleCreated = async () => {
   isDrawerOpen.value = false;
-  // Refresh the page to show the new role
-  if (route.name === "index") {
-    refreshCookie("nuxt-reload");
+
+  // 使用选项卡刷新机制来更新角色列表
+  if (route.name === "index" && process.client) {
+    // 触发选项卡刷新事件，这会调用 index.vue 中的 loadRoles 函数
+    window.dispatchEvent(
+      new CustomEvent("tab-navigation-refresh", {
+        detail: { path: "/" },
+      })
+    );
   }
 };
 

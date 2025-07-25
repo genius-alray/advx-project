@@ -6,6 +6,7 @@ definePageMeta({
 });
 
 const { fetchRoles, deleteRole, error } = useRoles();
+const { isAuthenticated } = useAuth();
 
 const roles = ref<Role[]>([]);
 const isLoading = ref(true);
@@ -37,6 +38,17 @@ const handleMemoryClick = (role: Role) => {
   // Navigate to memory management for this role
   navigateTo(`/role/${role.id}/memory`);
 };
+
+// 监听认证状态变化，登录后加载角色列表
+watch(
+  isAuthenticated,
+  (authenticated) => {
+    if (authenticated) {
+      loadRoles();
+    }
+  },
+  { immediate: true }
+);
 
 // 使用页面刷新 composable 确保切换页面时重新加载数据
 usePageRefresh(loadRoles);

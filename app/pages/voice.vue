@@ -1,29 +1,22 @@
 <script setup lang="ts">
-const { uploadVoice, fetchUserVoices, pending, error } = useVoices();
+const { uploadVoice, fetchUserVoiceDetails, error } = useVoices();
 const { isAuthenticated } = useAuth();
 
-const voices = ref<Blob[]>([]);
+const voices = ref<
+  { id: string; name: string; size: number; type: string; url: string }[]
+>([]);
 const isLoading = ref(true);
 const isUploading = ref(false);
 const uploadProgress = ref(0);
-
-// Redirect to login if not authenticated
-watch(
-  isAuthenticated,
-  (authenticated) => {
-    if (!authenticated) {
-      navigateTo("/login");
-    }
-  },
-  { immediate: true }
-);
+const voiceFile = ref<File | null>(null);
+const currentAudio = ref<HTMLAudioElement | null>(null);
 
 const loadVoices = async () => {
   if (!isAuthenticated.value) return;
 
   isLoading.value = true;
   try {
-    voices.value = await fetchUserVoices();
+    voices.value = await fetchUserVoiceDetails();
   } catch (err) {
     console.error("Failed to load voices:", err);
   } finally {
@@ -31,20 +24,36 @@ const loadVoices = async () => {
   }
 };
 
-const handleFileUpload = async (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  const file = target.files?.[0];
+// Redirect to login if not authenticated and load data when authenticated
+watch(
+  isAuthenticated,
+  (authenticated) => {
+    if (!authenticated) {
+      navigateTo("/login");
+    } else {
+      // 用户登录后立即加载数据
+      loadVoices();
+    }
+  },
+  { immediate: true }
+);
 
-  if (!file) return;
+const handleFileUpload = async (file: unknown) => {
+  const selectedFile = file as File | null;
+
+  if (!selectedFile) {
+    voiceFile.value = null;
+    return;
+  }
 
   // Check if it's an audio file
-  if (!file.type.startsWith("audio/")) {
+  if (!selectedFile.type.startsWith("audio/")) {
     alert("请上传音频文件");
     return;
   }
 
   // Check file size (limit to 10MB)
-  if (file.size > 10 * 1024 * 1024) {
+  if (selectedFile.size > 10 * 1024 * 1024) {
     alert("文件大小不能超过10MB");
     return;
   }
@@ -60,7 +69,7 @@ const handleFileUpload = async (event: Event) => {
       }
     }, 200);
 
-    const result = await uploadVoice(file);
+    const result = await uploadVoice(selectedFile);
 
     clearInterval(progressInterval);
     uploadProgress.value = 100;
@@ -68,6 +77,7 @@ const handleFileUpload = async (event: Event) => {
     if (result) {
       await loadVoices(); // Refresh the list
       alert("语音上传成功！");
+      voiceFile.value = null; // Reset file after successful upload
     }
   } catch (err) {
     console.error("Failed to upload voice:", err);
@@ -75,9 +85,41 @@ const handleFileUpload = async (event: Event) => {
   } finally {
     isUploading.value = false;
     uploadProgress.value = 0;
-    // Reset file input
-    target.value = "";
   }
+};
+
+// 播放语音
+const playVoice = (voiceUrl: string) => {
+  // 停止当前播放的音频
+  if (currentAudio.value) {
+    currentAudio.value.pause();
+    currentAudio.value = null;
+  }
+
+  // 创建新的音频对象并播放
+  const audio = new Audio(voiceUrl);
+  currentAudio.value = audio;
+
+  audio.play().catch((err) => {
+    console.error("Failed to play audio:", err);
+    alert("播放失败，请重试");
+  });
+
+  // 播放结束后清理
+  audio.addEventListener("ended", () => {
+    currentAudio.value = null;
+  });
+};
+
+// 下载语音
+const downloadVoice = (voiceUrl: string, voiceName: string) => {
+  const link = document.createElement("a");
+  link.href = voiceUrl;
+  link.download = `${voiceName}.mp3`;
+  link.style.display = "none";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 };
 
 const formatFileSize = (bytes: number) => {
@@ -98,38 +140,25 @@ onTabRefresh(loadVoices);
 
 <template>
   <div class="h-full flex flex-col">
-    <!-- Header -->
-    <div class="p-4 bg-white shadow-sm">
-      <h1 class="text-2xl font-bold text-primary">语音管理</h1>
-      <p class="text-sm text-gray-600 mt-1">上传家人的语音样本，用于声音克隆</p>
-    </div>
-
     <!-- Upload section -->
-    <div class="p-4 bg-white border-b">
+    <div class="p-4 bg-white">
       <div class="space-y-4">
-        <div
-          class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center"
-        >
-          <Icon
-            name="material-symbols:mic"
-            class="text-4xl text-gray-400 mb-2"
-          />
-          <p class="text-gray-600 mb-4">选择音频文件上传</p>
+        <div class="text-center">
+          <p class="text-gray-600 mb-2">上传语音文件</p>
           <p class="text-xs text-gray-500 mb-4">
             支持 MP3, WAV, M4A 格式，文件大小不超过 10MB
           </p>
 
-          <label class="cursor-pointer">
-            <UButton icon="material-symbols:upload" :disabled="isUploading">
-              选择文件
-            </UButton>
-            <input
-              type="file"
-              accept="audio/*"
-              class="hidden"
-              @change="handleFileUpload"
-            />
-          </label>
+          <UFileUpload
+            v-model="voiceFile"
+            variant="button"
+            accept="audio/*"
+            icon="material-symbols:mic"
+            size="lg"
+            class="text-primary"
+            :disabled="isUploading"
+            @update:model-value="handleFileUpload"
+          />
         </div>
 
         <!-- Upload progress -->
@@ -207,7 +236,7 @@ onTabRefresh(loadVoices);
                 class="text-2xl text-primary"
               />
               <div>
-                <div class="font-medium">语音文件 #{{ index + 1 }}</div>
+                <div class="font-medium">{{ voice.name }}</div>
                 <div class="text-sm text-gray-500">
                   {{ formatFileSize(voice.size || 0) }}
                 </div>
@@ -219,6 +248,7 @@ onTabRefresh(loadVoices);
                 icon="material-symbols:play-arrow"
                 variant="outline"
                 size="sm"
+                @click="playVoice(voice.url)"
               >
                 播放
               </UButton>
@@ -226,6 +256,7 @@ onTabRefresh(loadVoices);
                 icon="material-symbols:download"
                 variant="outline"
                 size="sm"
+                @click="downloadVoice(voice.url, voice.name)"
               >
                 下载
               </UButton>
