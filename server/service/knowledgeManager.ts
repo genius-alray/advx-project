@@ -1,6 +1,7 @@
 export interface Knowledge {
   id: string;
   roleId: string;
+  name: string;
   content: string;
   type: "text" | "file";
   createdAt: string;
@@ -24,11 +25,13 @@ export class knowledgeManager extends Singleton<knowledgeManager>() {
   async addKnowledge(
     roleId: string,
     content: string,
+    name?: string,
     type: "text" | "file" = "text"
   ): Promise<Knowledge> {
     const knowledge: Knowledge = {
       id: genUUID4(),
       roleId,
+      name: name || `记忆 #${Date.now()}`,
       content,
       type,
       createdAt: new Date().toISOString(),
@@ -91,7 +94,8 @@ export class knowledgeManager extends Singleton<knowledgeManager>() {
    */
   async updateKnowledge(
     knowledgeId: string,
-    content: string
+    content: string,
+    name?: string
   ): Promise<Knowledge | null> {
     const knowledge = await this.getKnowledge(knowledgeId);
     if (!knowledge) {
@@ -101,6 +105,7 @@ export class knowledgeManager extends Singleton<knowledgeManager>() {
     const updatedKnowledge: Knowledge = {
       ...knowledge,
       content,
+      ...(name && { name }),
       updatedAt: new Date().toISOString(),
     };
 
@@ -160,13 +165,21 @@ export class knowledgeManager extends Singleton<knowledgeManager>() {
   async addBatchKnowledge(
     roleId: string,
     contents: string[],
+    names?: string[],
     type: "text" | "file" = "text"
   ): Promise<Knowledge[]> {
     const knowledgeList: Knowledge[] = [];
 
-    for (const content of contents) {
+    for (let i = 0; i < contents.length; i++) {
+      const content = contents[i];
       if (content.trim()) {
-        const knowledge = await this.addKnowledge(roleId, content.trim(), type);
+        const name = names?.[i];
+        const knowledge = await this.addKnowledge(
+          roleId,
+          content.trim(),
+          name,
+          type
+        );
         knowledgeList.push(knowledge);
       }
     }

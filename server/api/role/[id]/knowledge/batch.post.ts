@@ -3,6 +3,7 @@ import { knowledgeManager } from "~~/server/service/knowledgeManager";
 
 const bodySchema = z.object({
   contents: z.array(z.string()).min(1, "Contents cannot be empty"),
+  names: z.array(z.string()).optional(),
   type: z.enum(["text", "file"]).optional().default("text"),
 });
 
@@ -13,14 +14,15 @@ export default defineEventHandler(async (event) => {
   await requireUserSession(event);
   const roleId = event.context.params!.id;
   const body = await readValidatedBody(event, bodySchema.parse);
-  
+
   try {
     const knowledgeList = await knowledgeManager.instance.addBatchKnowledge(
       roleId,
       body.contents,
+      body.names,
       body.type
     );
-    
+
     return {
       success: true,
       count: knowledgeList.length,
