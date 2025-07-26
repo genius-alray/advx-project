@@ -1,7 +1,7 @@
 <script setup lang="ts">
-// definePageMeta({
-//   middleware: "auth",
-// });
+definePageMeta({
+  middleware: "auth",
+});
 
 // 简单的响应式状态
 const memoryCounts = ref<Record<string, number>>({});
