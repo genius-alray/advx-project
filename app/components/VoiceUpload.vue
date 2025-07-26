@@ -16,13 +16,11 @@ const handleFileUpload = async (file: unknown) => {
     return;
   }
 
-  // Check if it's an audio file
   if (!selectedFile.type.startsWith("audio/")) {
     uploadError.value = "请上传音频文件";
     return;
   }
 
-  // Check file size (limit to 10MB)
   if (selectedFile.size > 10 * 1024 * 1024) {
     uploadError.value = "文件大小不能超过10MB";
     return;
@@ -33,7 +31,6 @@ const handleFileUpload = async (file: unknown) => {
   uploadError.value = null;
 
   try {
-    // Simulate upload progress
     const progressInterval = setInterval(() => {
       if (uploadProgress.value < 90) {
         uploadProgress.value += 10;
@@ -46,7 +43,6 @@ const handleFileUpload = async (file: unknown) => {
     uploadProgress.value = 100;
 
     if (result) {
-      // 成功后关闭抽屉并触发刷新
       emits("created");
       emits("close");
       voiceFile.value = null;
@@ -84,8 +80,7 @@ const handleFileUpload = async (file: unknown) => {
         :highlight="!!uploadError"
         color="primary"
         class="min-h-48"
-        @update:model-value="handleFileUpload"
-      />
+        @update:model-value="handleFileUpload" />
 
       <!-- Upload progress -->
       <div v-if="isUploading" class="space-y-2">
@@ -96,8 +91,7 @@ const handleFileUpload = async (file: unknown) => {
         <div class="w-full bg-gray-200 rounded-full h-2">
           <div
             class="bg-primary h-2 rounded-full transition-all duration-300"
-            :style="{ width: uploadProgress + '%' }"
-          />
+            :style="{ width: uploadProgress + '%' }" />
         </div>
       </div>
 
@@ -107,8 +101,7 @@ const handleFileUpload = async (file: unknown) => {
         color="error"
         variant="soft"
         :title="uploadError"
-        class="mb-4"
-      />
+        class="mb-4" />
 
       <!-- Instructions -->
       <div class="bg-gray-50 rounded-lg p-4">

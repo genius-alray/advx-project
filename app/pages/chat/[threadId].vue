@@ -125,9 +125,9 @@ const goBack = () => {
   navigateTo("/threads");
 };
 
+const voiceCache = new Map<string, string>();
 const playMessage = async (message: Message) => {
   if (playingMessageId.value === message.id) {
-    // 如果正在播放这条消息，停止播放
     if (currentAudio.value) {
       currentAudio.value.pause();
       currentAudio.value = null;
@@ -136,7 +136,6 @@ const playMessage = async (message: Message) => {
     return;
   }
 
-  // 停止当前播放的语音
   if (currentAudio.value) {
     currentAudio.value.pause();
     currentAudio.value = null;
@@ -150,18 +149,16 @@ const playMessage = async (message: Message) => {
   playingMessageId.value = message.id;
 
   try {
-    // 调用后端API生成语音
-    // 注意：API 期望的是 voiceId，而不是 roleId
-    const audioUrl = await synthesizeSpeech(
-      message.content,
-      role.value.voiceId
-    );
+    let audioUrl = "";
+    if (!voiceCache.has(message.id)) {
+      audioUrl = (await synthesizeSpeech(message.content, role.value.voiceId))!;
+      voiceCache.set(message.id, audioUrl);
+    }
 
     if (!audioUrl) {
       throw new Error("Failed to get audio URL");
     }
 
-    // 播放生成的语音
     const audio = new Audio(audioUrl);
     currentAudio.value = audio;
 
@@ -196,7 +193,6 @@ onMounted(async () => {
   }
 });
 
-// 清理音频播放
 onUnmounted(() => {
   if (currentAudio.value) {
     currentAudio.value.pause();
@@ -205,7 +201,6 @@ onUnmounted(() => {
   playingMessageId.value = null;
 });
 
-// 清理语音播放
 onUnmounted(() => {
   speechSynthesis.cancel();
 });
@@ -218,14 +213,12 @@ onUnmounted(() => {
 
       <div
         v-if="role"
-        class="flex flex-col justify-center items-center flex-1 min-w-0"
-      >
+        class="flex flex-col justify-center items-center flex-1 min-w-0">
         <div class="flex items-center">
           <UAvatar
             :src="role.avatar || undefined"
             size="md"
-            class="flex-shrink-0"
-          />
+            class="flex-shrink-0" />
           <div class="ml-3 min-w-0 flex-1">
             <h1 class="text-lg font-bold truncate">{{ role.name }}</h1>
           </div>
@@ -234,8 +227,7 @@ onUnmounted(() => {
       <Icon
         name="tabler:menu-deep"
         class="text-primary"
-        @click="router.push(`/role/${role.id}/memory`)"
-      />
+        @click="router.push(`/role/${role.id}/memory`)" />
     </header>
     <main class="flex-1 overflow-auto">
       <!-- Loading state -->
@@ -261,8 +253,7 @@ onUnmounted(() => {
           <!-- Welcome message -->
           <div
             v-if="messages.length === 0"
-            class="text-center text-gray-500 py-8"
-          >
+            class="text-center text-gray-500 py-8">
             <Icon name="material-symbols:chat" class="text-4xl mb-2" />
             <p>开始与 {{ role?.name }} 对话吧</p>
           </div>
@@ -274,22 +265,19 @@ onUnmounted(() => {
             :class="[
               'flex px-2',
               message.sender === 'user' ? 'justify-end' : 'justify-start',
-            ]"
-          >
+            ]">
             <div
               :class="[
                 'flex flex-col',
                 message.sender === 'user' ? 'items-end' : 'items-start',
-              ]"
-            >
+              ]">
               <div
                 :class="[
                   'px-4 py-2 rounded-lg break-words flex items-center space-x-2',
                   message.sender === 'user'
                     ? 'bg-primary text-white'
                     : 'bg-white shadow-sm',
-                ]"
-              >
+                ]">
                 <UButton
                   v-if="message.sender === 'ai'"
                   :icon="
@@ -299,8 +287,7 @@ onUnmounted(() => {
                   "
                   size="xs"
                   :loading="playingMessageId === message.id"
-                  @click="playMessage(message)"
-                />
+                  @click="playMessage(message)" />
                 <p class="text-sm whitespace-pre-wrap">{{ message.content }}</p>
               </div>
             </div>
@@ -313,12 +300,10 @@ onUnmounted(() => {
                 <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
                 <div
                   class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                  style="animation-delay: 0.1s"
-                />
+                  style="animation-delay: 0.1s" />
                 <div
                   class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                  style="animation-delay: 0.2s"
-                />
+                  style="animation-delay: 0.2s" />
               </div>
             </div>
           </div>
@@ -328,15 +313,13 @@ onUnmounted(() => {
     <footer class="bg-white shadow-lg rounded-tl-xl rounded-tr-xl w-full">
       <form
         class="p-4 flex space-x-2 items-center"
-        @submit.prevent="handleSendMessage"
-      >
+        @submit.prevent="handleSendMessage">
         <UInput
           v-model="newMessage"
           placeholder="输入消息..."
           class="flex-1"
           size="xl"
-          :disabled="isSending || !thread"
-        />
+          :disabled="isSending || !thread" />
 
         <!-- <UButton
           type="submit"
