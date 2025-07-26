@@ -7,15 +7,6 @@ export class roleManager extends Singleton<roleManager>() {
 
   private constructor() {
     super();
-    this.addRole("admin", {
-      id: "test_role",
-      belongsTo: "admin",
-      name: "测试角色",
-      voiceId: "default",
-      description: "测试角色",
-      avatar: "",
-      background: "",
-    });
   }
 
   async addRole(userId: string, role: Role) {

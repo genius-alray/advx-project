@@ -1,4 +1,5 @@
 import { Singleton } from "~~/server/utils/singleton";
+import { roleManager } from "./roleManager";
 
 /**
  * 语音管理器
@@ -12,6 +13,41 @@ export class voiceManager extends Singleton<voiceManager>() {
     type: string;
     size: number;
   }>();
+
+  private constructor() {
+    super();
+    this.initializeTestData();
+  }
+
+  private async initializeTestData() {
+    try {
+      // 使用 fetch API 读取 public 文件夹中的 voice.mp3 文件
+      const response = await fetch("http://advx-project.pages.dev/voice.mp3");
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch voice.mp3: ${response.status}`);
+      }
+
+      // 直接获取 Blob 对象
+      const voiceBlob = await response.blob();
+
+      // 添加测试语音数据
+      await this.addVoice("kevin", "admin", "kevin", voiceBlob);
+
+      await roleManager.instance.addRole("admin", {
+        id: "kevin",
+        belongsTo: "admin",
+        name: "凯文",
+        voiceId: "kevin",
+        description: "AdventureX 参赛者",
+        avatar: "",
+        background: `参加黑客松比赛Adventure X和团队做出《我们的回响》，用AI让记忆再一次发出它们原本的声音以及这背后的故事`,
+      });
+      console.log("Test voice data initialized successfully");
+    } catch (error) {
+      console.error("Failed to initialize test voice data:", error);
+    }
+  }
 
   async addVoice(name: string, userId: string, voiceId: string, voice: Blob) {
     let voices = await this.userVoices.get(userId);
