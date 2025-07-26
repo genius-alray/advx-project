@@ -6,9 +6,14 @@ import { Singleton } from "~~/server/utils/singleton";
  */
 export class voiceManager extends Singleton<voiceManager>() {
   userVoices = useStorage<string[]>("userVoices");
-  voices = useStorage<{ data: number[]; type: string; size: number }>();
+  voices = useStorage<{
+    name: string;
+    data: number[];
+    type: string;
+    size: number;
+  }>();
 
-  async addVoice(userId: string, voiceId: string, voice: Blob) {
+  async addVoice(name: string, userId: string, voiceId: string, voice: Blob) {
     let voices = await this.userVoices.get(userId);
     if (!voices) {
       voices = [];
@@ -19,6 +24,7 @@ export class voiceManager extends Singleton<voiceManager>() {
     const arrayBuffer = await voice.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
     await this.voices.set(voiceId, {
+      name,
       data: Array.from(buffer), // Convert Buffer to array of numbers for JSON serialization
       type: voice.type,
       size: voice.size,

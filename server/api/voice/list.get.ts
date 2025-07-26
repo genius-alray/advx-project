@@ -11,11 +11,24 @@ export default defineEventHandler(async (event) => {
     return [];
   }
 
-  // 返回语音ID和显示名称的列表
-  const result = voiceIds.map((id, index) => ({
-    id,
-    name: `语音文件 #${index + 1}`,
-  }));
+  // 获取每个语音的详细信息
+  const voiceDetails: Array<{
+    id: string;
+    name: string;
+  } | null> = [];
 
-  return result;
+  for (const voiceId of voiceIds) {
+    const voiceData = await voiceManager.instance.voices.get(voiceId);
+    if (!voiceData) {
+      voiceDetails.push(null);
+      continue;
+    }
+
+    voiceDetails.push({
+      id: voiceId,
+      name: voiceData.name,
+    });
+  }
+
+  return voiceDetails;
 });

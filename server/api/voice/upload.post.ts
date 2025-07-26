@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
   const blob = new Blob([data], { type: file.type });
   const voiceId = genUUID4();
 
-  await voiceManager.instance.addVoice(user.id, voiceId, blob);
+  await voiceManager.instance.addVoice(file.name, user.id, voiceId, blob);
 
   return {
     id: voiceId,
