@@ -180,7 +180,13 @@ const startRecording = async () => {
     }, 1000);
   } catch (err) {
     console.error("Failed to start recording:", err);
-    alert("无法访问麦克风，请检查权限设置");
+    alert(
+      "无法访问麦克风，请检查权限设置" +
+        err +
+        " | " +
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (err as unknown as any).message
+    );
   }
 };
 
