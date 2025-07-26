@@ -5,7 +5,7 @@ import { threadManager } from "~~/server/service/threadManager";
 
 const config = useRuntimeConfig();
 const ai = new OpenAI({
-  apiKey: config.deepseekApiKey,
+  apiKey: config.LLMApiKey,
   baseURL: "https://api.moonshot.cn/v1",
 });
 
@@ -87,7 +87,7 @@ ${knowledgeContext}
       message: aiResponse,
     };
   } catch (error) {
-    console.error("DeepSeek API error:", error);
+    console.error("LLM API error:", error);
 
     const fallbackMessage = "抱歉，我现在有些忙，稍后再聊好吗？";
 

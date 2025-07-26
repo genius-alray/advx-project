@@ -15,7 +15,7 @@ export default defineNuxtConfig({
   css: ["~/assets/main.css"],
   ui: { colorMode: false },
   runtimeConfig: {
-    deepseekApiKey: process.env.DEEPSEEK_API_KEY,
+    LLMApiKey: process.env.LLM_API_KEY,
 
     public: {},
   },
