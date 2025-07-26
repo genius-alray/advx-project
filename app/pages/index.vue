@@ -13,19 +13,6 @@ const {
 const roleEditOpen = ref(false);
 const roles = computed(() => data.value || []);
 
-const handleDeleteRole = async (roleId: string) => {
-  if (!confirm("确定要删除这个角色吗？")) return;
-
-  try {
-    await $fetch(`/api/role/${roleId}`, {
-      method: "DELETE",
-    });
-    await refresh();
-  } catch (err) {
-    console.error("Failed to delete role:", err);
-    alert("删除角色失败，请重试");
-  }
-};
 function handleCreated() {
   roleEditOpen.value = false;
   refresh();
@@ -70,7 +57,7 @@ function createChat(roleId: string) {
         </template>
       </UDrawer>
     </header>
-    <main class="flex-1">
+    <main class="flex-1 overflow-auto">
       <div v-if="pending" class="flex items-center justify-center h-full">
         <div class="flex flex-col items-center space-y-4 text-primary">
           <Icon name="material-symbols:refresh" class="text-8xl animate-spin" />

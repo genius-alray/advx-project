@@ -60,10 +60,11 @@ onTabRefresh(loadData);
 <template>
   <div class="contents">
     <header
-      class="bg-transparent text-2xl font-bold flex justify-between px-9 items-center">
+      class="bg-transparent text-2xl font-bold flex justify-between px-9 items-center"
+    >
       <span>对话历史</span>
     </header>
-    <main class="flex-1">
+    <main class="flex-1 overflow-auto">
       <!-- Loading state -->
       <div v-if="isLoading" class="flex items-center justify-center h-full">
         <div class="flex flex-col items-center space-y-4 text-primary">
@@ -84,7 +85,8 @@ onTabRefresh(loadData);
       <!-- Empty state -->
       <div
         v-else-if="threads.length === 0"
-        class="flex items-center justify-center h-full">
+        class="flex items-center justify-center h-full"
+      >
         <div class="flex flex-col items-center space-y-4 text-primary">
           <Icon name="material-symbols:chat-bubble" class="text-8xl" />
           <span>还没有任何对话</span>
@@ -100,7 +102,8 @@ onTabRefresh(loadData);
           v-for="thread of threads"
           :key="thread.id"
           class="flex items-center py-4 px-6 shadow-xl shadow-primary/20 rounded-xl space-x-4 bg-white cursor-pointer hover:shadow-2xl transition-shadow group"
-          @click="handleThreadClick(thread)">
+          @click="handleThreadClick(thread)"
+        >
           <div class="flex-1">
             <div class="flex items-center justify-between mb-2">
               <span class="text-lg font-semibold">{{ thread.title }}</span>
@@ -111,7 +114,8 @@ onTabRefresh(loadData);
 
             <div
               v-if="thread.content && thread.content.length > 0"
-              class="text-sm text-gray-600">
+              class="text-sm text-gray-600"
+            >
               {{
                 thread.content[thread.content.length - 1]?.content?.slice(
                   0,
