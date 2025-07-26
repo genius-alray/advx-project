@@ -14,5 +14,13 @@
     "iconify",
     "Nuxt",
     "nuxtjs"
-  ]
+  ],
+  "editor.codeActionsOnSave": {
+  
+    "source.fixAll.ts": "explicit",
+    "source.fixAll.eslint": "explicit",
+    "source.sortImports": "always",
+    "source.addMissingImports.ts": "explicit",
+    "source.organizeImports": "always"
+  },
 }

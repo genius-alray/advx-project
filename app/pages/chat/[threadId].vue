@@ -1,12 +1,12 @@
 <script setup lang="ts">
+import type { Message } from "~~/shared/types/message";
 import type { Role } from "~~/shared/types/role";
 import type { Thread } from "~~/shared/types/thread";
-import type { Message } from "~~/shared/types/message";
 
 definePageMeta({ layout: false });
 
 const route = useRoute();
-const roleId = route.params.roleId as string;
+const threadId = route.params.threadId as string;
 
 // 简单的响应式状态
 const role = ref<Role | null>(null);
@@ -17,42 +17,28 @@ const isLoading = ref(true);
 const isSending = ref(false);
 const chatContainer = ref<HTMLElement>();
 const lastFailedMessage = ref<string | null>(null);
+const error = ref<string | null>(null);
 
-// 直接获取角色数据
-const loadRole = async () => {
+// 加载thread和相关的role数据
+const loadThreadAndRole = async () => {
   try {
+    // 首先获取thread数据
+    const threadData = await $fetch<Thread>(`/api/thread/${threadId}/content`);
+    if (!threadData) {
+      throw new Error("Thread not found");
+    }
+    thread.value = threadData;
+    messages.value = threadData.content || [];
+
+    // 然后获取对应的role数据
     const roles = await $fetch<Role[]>("/api/role/all");
-    role.value = roles.find((r: Role) => r.id === roleId) || null;
+    role.value = roles.find((r: Role) => r.id === threadData.roleId) || null;
     if (!role.value) {
       throw new Error("Role not found");
     }
   } catch (err) {
-    console.error("Failed to load role:", err);
+    console.error("Failed to load thread or role:", err);
     await navigateTo("/");
-  }
-};
-
-// 直接创建新对话
-const createNewThread = async () => {
-  if (!role.value) return;
-
-  try {
-    const result = await $fetch<{ id: string }>("/api/thread/create", {
-      method: "POST",
-      body: { roleId },
-    });
-
-    if (result) {
-      const threadData = await $fetch<Thread>(
-        `/api/thread/${result.id}/content`
-      );
-      if (threadData) {
-        thread.value = threadData;
-        messages.value = threadData.content || [];
-      }
-    }
-  } catch (err) {
-    console.error("Failed to create thread:", err);
   }
 };
 
@@ -143,7 +129,7 @@ const scrollToBottom = () => {
 };
 
 const goBack = () => {
-  navigateTo("/");
+  navigateTo("/threads");
 };
 
 const retryLastMessage = async () => {
@@ -154,12 +140,11 @@ const retryLastMessage = async () => {
   await handleSendMessage();
 };
 
-// 页面初始化 - 每次进入页面都重新加载所有数据
+// 页面初始化 - 加载现有的thread和role数据
 onMounted(async () => {
   isLoading.value = true;
   try {
-    await loadRole();
-    await createNewThread();
+    await loadThreadAndRole();
   } finally {
     isLoading.value = false;
     nextTick(() => {
@@ -174,31 +159,35 @@ onMounted(async () => {
     class="h-screen w-full bg-primary-50/50 flex flex-col max-w-md mx-auto overflow-hidden"
   >
     <!-- Header -->
-    <header class="flex items-center p-4 bg-white shadow-sm min-h-0">
+    <header class="flex items-center p-4 min-h-0">
       <UButton
         icon="material-symbols:arrow-back"
         variant="ghost"
         size="sm"
+        class="flex-shrink-0 absolute"
         @click="goBack"
-        class="flex-shrink-0"
       />
 
-      <div v-if="role" class="flex items-center ml-4 flex-1 min-w-0">
-        <UAvatar
-          :src="role.avatar || undefined"
-          size="md"
-          class="flex-shrink-0"
-        />
-        <div class="ml-3 min-w-0 flex-1">
-          <h1 class="text-lg font-bold truncate">{{ role.name }}</h1>
-          <p class="text-sm text-gray-500 truncate">{{ role.description }}</p>
+      <div
+        v-if="role"
+        class="flex flex-col justify-center items-center flex-1 min-w-0"
+      >
+        <div class="flex items-center">
+          <UAvatar
+            :src="role.avatar || undefined"
+            size="md"
+            class="flex-shrink-0"
+          />
+          <div class="ml-3 min-w-0 flex-1">
+            <h1 class="text-lg font-bold truncate">{{ role.name }}</h1>
+          </div>
         </div>
       </div>
 
       <div v-else class="flex-1 ml-4">
         <div class="animate-pulse">
-          <div class="h-4 bg-gray-300 rounded w-24 mb-2"></div>
-          <div class="h-3 bg-gray-300 rounded w-32"></div>
+          <div class="h-4 bg-gray-300 rounded w-24 mb-2" />
+          <div class="h-3 bg-gray-300 rounded w-32" />
         </div>
       </div>
     </header>
@@ -216,7 +205,7 @@ onMounted(async () => {
       <div class="flex flex-col items-center space-y-4 text-primary">
         <Icon name="material-symbols:error" class="text-6xl" />
         <span>{{ error }}</span>
-        <UButton @click="goBack" variant="outline">返回</UButton>
+        <UButton variant="outline" @click="goBack">返回</UButton>
       </div>
     </div>
 
@@ -257,17 +246,15 @@ onMounted(async () => {
         <div v-if="isSending" class="flex justify-start">
           <div class="bg-white shadow-sm px-4 py-2 rounded-lg">
             <div class="flex space-x-1">
-              <div
-                class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-              ></div>
+              <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
               <div
                 class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
                 style="animation-delay: 0.1s"
-              ></div>
+              />
               <div
                 class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
                 style="animation-delay: 0.2s"
-              ></div>
+              />
             </div>
           </div>
         </div>
@@ -296,7 +283,7 @@ onMounted(async () => {
               >
                 取消
               </UButton>
-              <UButton size="xs" @click="retryLastMessage" :loading="isSending">
+              <UButton size="xs" :loading="isSending" @click="retryLastMessage">
                 重试
               </UButton>
             </div>
@@ -308,7 +295,7 @@ onMounted(async () => {
           </div>
         </div>
 
-        <form @submit.prevent="handleSendMessage" class="flex space-x-2">
+        <form class="flex space-x-2" @submit.prevent="handleSendMessage">
           <UInput
             v-model="newMessage"
             placeholder="输入消息..."
