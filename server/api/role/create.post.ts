@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
   await roleManager.instance.addRole(user.id, {
     id: roleId,
     name: body.name,
-    description: body.description ?? "我的赛博祖先",
+    description: body.description ?? "暂无描述",
     avatar: body.avatar ?? "",
     background: body.background ?? "",
     voiceId: body.voiceId ?? "default",

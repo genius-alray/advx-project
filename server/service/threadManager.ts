@@ -7,7 +7,7 @@ export class threadManager extends Singleton<threadManager>() {
 
   private constructor() {
     super();
-    this.addThread("admin", "test_role", "test_thread");
+    this.addThread("admin", "kevin", "test_thread");
   }
   async addThread(userId: string, roleId: string, threadId: string) {
     let threads = await this.userThreads.get(userId);
