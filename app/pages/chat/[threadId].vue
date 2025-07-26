@@ -82,6 +82,7 @@ const handleSendMessage = async () => {
         content: replyResult.message,
       };
       messages.value.push(aiMessage);
+      playMessage(aiMessage);
 
       nextTick(() => {
         scrollToBottom();
@@ -177,7 +178,7 @@ const playMessage = async (message: Message) => {
 
     await audio.play();
   } catch (err) {
-    console.error("Failed to play message:", err);
+    console.error("Failed to play message:", err); // Fuck iOS!
     playingMessageId.value = null;
     currentAudio.value = null;
   }
