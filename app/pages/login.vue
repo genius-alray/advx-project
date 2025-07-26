@@ -33,19 +33,16 @@ watch(
 
 <template>
   <UContainer
-    class="max-w-md bg-primary-50 p-0 h-screen w-screen flex justify-center overflow-hidden"
-  >
+    class="max-w-md bg-primary-50 p-0 h-screen w-screen flex justify-center overflow-hidden">
     <div class="flex flex-col justify-center w-3xs space-y-4">
       <NuxtImg src="/loginHero.svg" class="mb-8" />
-
-      <form @submit.prevent="handleLogin" class="space-y-4">
+      <form class="space-y-4" @submit.prevent="handleLogin">
         <UInput
           v-model="form.id"
           placeholder="用户ID"
           size="xl"
           required
-          :disabled="pending"
-        />
+          :disabled="pending" />
 
         <UInput
           v-model="form.password"
@@ -53,16 +50,14 @@ watch(
           placeholder="密码"
           size="xl"
           required
-          :disabled="pending"
-        />
+          :disabled="pending" />
 
         <UAlert
           v-if="error"
           color="error"
           variant="soft"
           :title="error"
-          class="mb-4"
-        />
+          class="mb-4" />
 
         <UButton
           type="submit"
@@ -70,8 +65,7 @@ watch(
           size="xl"
           class="p-4 text-xl"
           :loading="pending"
-          :disabled="!form.id || !form.password"
-        >
+          :disabled="!form.id || !form.password">
           登录
         </UButton>
       </form>
