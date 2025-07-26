@@ -12,6 +12,15 @@ const voiceFile = ref<File | null>(null);
 const currentAudio = ref<HTMLAudioElement | null>(null);
 const uploadDrawerOpen = ref(false);
 
+// Recording related state
+const uploadMode = ref<"file" | "record">("file");
+const isRecording = ref(false);
+const isRecordingSupported = ref(false);
+const recordingDuration = ref(0);
+const recordedBlob = ref<Blob | null>(null);
+const mediaRecorder = ref<MediaRecorder | null>(null);
+const recordingTimer = ref<NodeJS.Timeout | null>(null);
+
 const loadVoices = async () => {
   if (!isAuthenticated.value) return;
 
@@ -121,6 +130,134 @@ const formatFileSize = (bytes: number) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 };
 
+// Recording related functions
+const formatRecordingTime = (seconds: number) => {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins.toString().padStart(2, "0")}:${secs
+    .toString()
+    .padStart(2, "0")}`;
+};
+
+const checkRecordingSupport = () => {
+  isRecordingSupported.value = !!(
+    navigator.mediaDevices && navigator.mediaDevices.getUserMedia
+  );
+};
+
+const startRecording = async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+    const recorder = new MediaRecorder(stream, {
+      mimeType: "audio/webm;codecs=opus",
+    });
+
+    const chunks: BlobPart[] = [];
+
+    recorder.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        chunks.push(event.data);
+      }
+    };
+
+    recorder.onstop = () => {
+      const blob = new Blob(chunks, { type: "audio/webm" });
+      recordedBlob.value = blob;
+
+      // Stop all tracks to release microphone
+      stream.getTracks().forEach((track) => track.stop());
+    };
+
+    mediaRecorder.value = recorder;
+    recorder.start();
+    isRecording.value = true;
+    recordingDuration.value = 0;
+
+    // Start timer
+    recordingTimer.value = setInterval(() => {
+      recordingDuration.value++;
+    }, 1000);
+  } catch (err) {
+    console.error("Failed to start recording:", err);
+    alert("无法访问麦克风，请检查权限设置");
+  }
+};
+
+const stopRecording = () => {
+  if (mediaRecorder.value && isRecording.value) {
+    mediaRecorder.value.stop();
+    isRecording.value = false;
+
+    if (recordingTimer.value) {
+      clearInterval(recordingTimer.value);
+      recordingTimer.value = null;
+    }
+  }
+};
+
+const playRecording = () => {
+  if (recordedBlob.value) {
+    const audioUrl = URL.createObjectURL(recordedBlob.value);
+    const audio = new Audio(audioUrl);
+
+    if (currentAudio.value) {
+      currentAudio.value.pause();
+    }
+
+    currentAudio.value = audio;
+    audio.play().catch((err) => {
+      console.error("Failed to play recording:", err);
+      alert("播放失败，请重试");
+    });
+
+    audio.addEventListener("ended", () => {
+      URL.revokeObjectURL(audioUrl);
+      currentAudio.value = null;
+    });
+  }
+};
+
+const resetRecording = () => {
+  recordedBlob.value = null;
+  recordingDuration.value = 0;
+
+  if (currentAudio.value) {
+    currentAudio.value.pause();
+    currentAudio.value = null;
+  }
+};
+
+const uploadRecording = async () => {
+  if (!recordedBlob.value) return;
+
+  // Convert blob to File
+  const file = new File([recordedBlob.value], `recording-${Date.now()}.webm`, {
+    type: "audio/webm",
+  });
+
+  await handleFileUpload(file);
+  resetRecording();
+};
+
+// Initialize recording support check
+onMounted(() => {
+  checkRecordingSupport();
+});
+
+// Cleanup on unmount
+onUnmounted(() => {
+  if (recordingTimer.value) {
+    clearInterval(recordingTimer.value);
+  }
+  if (mediaRecorder.value && isRecording.value) {
+    mediaRecorder.value.stop();
+  }
+  if (currentAudio.value) {
+    currentAudio.value.pause();
+  }
+});
+
 usePageRefresh(loadVoices);
 
 const { onTabRefresh } = useTabNavigation();
@@ -147,24 +284,148 @@ onTabRefresh(loadVoices);
 
             <!-- Upload area -->
             <div class="space-y-4">
-              <UFileUpload
-                v-model="voiceFile"
-                variant="area"
-                accept="audio/*"
-                icon="material-symbols:mic"
-                label="拖拽语音文件到此处或点击上传"
-                description="支持 MP3, WAV, M4A 格式，文件大小不超过 10MB"
-                size="lg"
-                :disabled="isUploading"
-                color="primary"
-                class="min-h-48"
-                @update:model-value="handleFileUpload"
-              />
+              <!-- Tab switcher -->
+              <div class="flex bg-gray-100 rounded-lg p-1">
+                <button
+                  :class="[
+                    'flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors',
+                    uploadMode === 'file'
+                      ? 'bg-white text-primary shadow-sm'
+                      : 'text-gray-600 hover:text-gray-800',
+                  ]"
+                  @click="uploadMode = 'file'"
+                >
+                  <Icon name="material-symbols:upload-file" class="mr-2" />
+                  文件上传
+                </button>
+                <button
+                  :class="[
+                    'flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors',
+                    uploadMode === 'record'
+                      ? 'bg-white text-primary shadow-sm'
+                      : 'text-gray-600 hover:text-gray-800',
+                  ]"
+                  @click="uploadMode = 'record'"
+                >
+                  <Icon name="material-symbols:mic" class="mr-2" />
+                  录音上传
+                </button>
+              </div>
+
+              <!-- File upload mode -->
+              <div v-if="uploadMode === 'file'" class="space-y-4">
+                <UFileUpload
+                  v-model="voiceFile"
+                  variant="area"
+                  accept="audio/*"
+                  icon="material-symbols:upload-file"
+                  label="拖拽语音文件到此处或点击上传"
+                  description="支持 MP3, WAV, M4A 格式，文件大小不超过 10MB"
+                  size="lg"
+                  :disabled="isUploading"
+                  color="primary"
+                  class="min-h-48"
+                  @update:model-value="handleFileUpload"
+                />
+              </div>
+
+              <!-- Recording mode -->
+              <div v-else class="space-y-4">
+                <div
+                  class="bg-gray-50 rounded-lg p-6 min-h-48 flex flex-col items-center justify-center"
+                >
+                  <!-- Recording status -->
+                  <div class="text-center mb-6">
+                    <h3 class="text-lg font-medium text-gray-800 mb-2">
+                      {{ isRecording ? "正在录音..." : "点击开始录音" }}
+                    </h3>
+                    <p class="text-sm text-gray-600">
+                      {{
+                        isRecording
+                          ? `录音时长: ${formatRecordingTime(
+                              recordingDuration
+                            )}`
+                          : "建议录制 10-30 秒的清晰语音"
+                      }}
+                    </p>
+                  </div>
+
+                  <!-- Recording controls -->
+                  <div class="flex flex-col items-center space-x-4 w-full">
+                    <UButton
+                      v-if="!isRecording && !recordedBlob"
+                      size="lg"
+                      :disabled="isUploading || !isRecordingSupported"
+                      @click="startRecording"
+                    >
+                      <Icon
+                        name="material-symbols:mic"
+                        class="mr-2 self-center"
+                      />
+                      开始录音
+                    </UButton>
+
+                    <UButton
+                      v-if="isRecording"
+                      size="lg"
+                      color="error"
+                      @click="stopRecording"
+                    >
+                      <Icon name="material-symbols:stop" class="mr-2" />
+                      停止录音
+                    </UButton>
+
+                    <template v-if="recordedBlob && !isRecording">
+                      <div class="flex flex-col space-y-3 m-5">
+                        <UButton
+                          size="lg"
+                          variant="outline"
+                          @click="playRecording"
+                        >
+                          <Icon
+                            name="material-symbols:play-arrow"
+                            class="mr-2"
+                          />
+                          试听
+                        </UButton>
+                        <UButton
+                          size="lg"
+                          variant="outline"
+                          @click="resetRecording"
+                        >
+                          <Icon name="material-symbols:refresh" class="mr-2" />
+                          重录
+                        </UButton>
+                        <UButton
+                          size="lg"
+                          :disabled="isUploading"
+                          @click="uploadRecording"
+                        >
+                          <Icon name="material-symbols:upload" class="mr-2" />
+                          上传录音
+                        </UButton>
+                      </div>
+                    </template>
+                  </div>
+
+                  <!-- Recording not supported message -->
+                  <div v-if="!isRecordingSupported" class="mt-4 text-center">
+                    <UAlert
+                      color="warning"
+                      variant="soft"
+                      title="您的浏览器不支持录音功能"
+                      description="请使用现代浏览器或切换到文件上传模式"
+                    />
+                  </div>
+                </div>
+              </div>
 
               <!-- Upload progress -->
               <div v-if="isUploading" class="space-y-2">
                 <div class="flex justify-between text-sm">
-                  <span>上传中...</span>
+                  <span>{{
+                    uploadMode === "file" ? "上传中..." : "上传录音中..."
+                  }}</span>
                   <span>{{ uploadProgress }}%</span>
                 </div>
                 <div class="w-full bg-gray-200 rounded-full h-2">
@@ -183,23 +444,12 @@ onTabRefresh(loadVoices);
                 :title="error"
                 class="mb-4"
               />
-
-              <!-- Instructions -->
-              <div class="bg-gray-50 rounded-lg p-4">
-                <h4 class="font-medium text-gray-800 mb-2">上传说明</h4>
-                <ul class="text-sm text-gray-600 space-y-1">
-                  <li>• 支持的格式：MP3, WAV, M4A</li>
-                  <li>• 文件大小限制：10MB</li>
-                  <li>• 建议录制清晰的语音样本以获得更好的效果</li>
-                  <li>• 上传的语音将用于创建个性化的声音模型</li>
-                </ul>
-              </div>
             </div>
           </div>
         </template>
       </UDrawer>
     </header>
-    <main class="flex-1">
+    <main class="flex-1 overflow-auto">
       <!-- Loading state -->
       <div v-if="isLoading" class="flex items-center justify-center h-full">
         <div class="flex flex-col items-center space-y-4 text-primary">
@@ -235,7 +485,7 @@ onTabRefresh(loadVoices);
       </div>
 
       <!-- Voices list -->
-      <div v-else class="overflow-auto h-full">
+      <div v-else>
         <div class="p-4 space-y-4">
           <div class="text-sm text-gray-600 mb-4">
             已上传 {{ voices.length }} 个语音文件
