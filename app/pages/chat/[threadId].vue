@@ -183,13 +183,6 @@ onMounted(async () => {
           </div>
         </div>
       </div>
-
-      <div v-else class="flex-1 ml-4">
-        <div class="animate-pulse">
-          <div class="h-4 bg-gray-300 rounded w-24 mb-2" />
-          <div class="h-3 bg-gray-300 rounded w-32" />
-        </div>
-      </div>
     </header>
 
     <!-- Loading state -->
@@ -261,7 +254,7 @@ onMounted(async () => {
       </div>
 
       <!-- Message input -->
-      <div class="p-4 bg-white flex-shrink-0">
+      <div class="p-4 bg-white flex-shrink-0 rounded-xl">
         <!-- Retry button for failed messages -->
         <div
           v-if="lastFailedMessage"
@@ -299,7 +292,7 @@ onMounted(async () => {
           <UInput
             v-model="newMessage"
             placeholder="输入消息..."
-            class="flex-1 min-w-0"
+            class="flex-1 min-w-0 [&_input]:p-3 [&_input]:rounded-xl"
             :disabled="isSending || !thread"
             @keydown.enter.prevent="handleSendMessage"
           />
@@ -309,7 +302,7 @@ onMounted(async () => {
             icon="material-symbols:send"
             :loading="isSending"
             :disabled="!newMessage.trim() || !thread"
-            class="flex-shrink-0"
+            class="flex-shrink-0 rounded-xl"
           />
         </form>
       </div>
