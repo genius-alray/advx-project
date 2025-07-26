@@ -7,14 +7,15 @@ export const useTabNavigation = () => {
   const route = useRoute();
 
   // 创建一个全局事件总线来通知页面刷新
-  const refreshEvent = 'tab-navigation-refresh';
+  const refreshEvent = "tab-navigation-refresh";
 
   const navigateToTab = async (path: string) => {
     // 如果已经在目标页面，强制刷新数据
     if (route.path === path) {
       // 触发页面刷新事件
       if (process.client) {
-        window.dispatchEvent(new CustomEvent(refreshEvent, { detail: { path } }));
+        // 使用 Nuxt 的响应式系统，通过路由变化自动触发页面刷新
+        await navigateTo(path, { replace: true });
       }
     } else {
       // 导航到新页面
@@ -34,7 +35,10 @@ export const useTabNavigation = () => {
       window.addEventListener(refreshEvent, handleRefresh as EventListener);
 
       onUnmounted(() => {
-        window.removeEventListener(refreshEvent, handleRefresh as EventListener);
+        window.removeEventListener(
+          refreshEvent,
+          handleRefresh as EventListener
+        );
       });
     }
   };

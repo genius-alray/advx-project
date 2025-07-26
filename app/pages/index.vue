@@ -9,6 +9,7 @@ definePageMeta({
 const roles = ref<Role[]>([]);
 const isLoading = ref(true);
 const error = ref<string | null>(null);
+const memoryCounts = ref<Record<string, number>>({});
 
 // 直接获取角色数据
 const loadRoles = async () => {
@@ -16,12 +17,33 @@ const loadRoles = async () => {
   error.value = null;
   try {
     roles.value = await $fetch<Role[]>("/api/role/all");
+    // 加载每个角色的记忆数量
+    await loadMemoryCounts();
   } catch (err) {
     console.error("Failed to load roles:", err);
     error.value = "加载角色失败";
   } finally {
     isLoading.value = false;
   }
+};
+
+// 加载所有角色的记忆数量
+const loadMemoryCounts = async () => {
+  const counts: Record<string, number> = {};
+
+  for (const role of roles.value) {
+    try {
+      const memories = await $fetch<{ id: string }[]>(
+        `/api/role/${role.id}/knowledge`
+      );
+      counts[role.id] = memories.length;
+    } catch (err) {
+      console.error(`Failed to load memory count for role ${role.id}:`, err);
+      counts[role.id] = 0;
+    }
+  }
+
+  memoryCounts.value = counts;
 };
 
 // 直接删除角色
@@ -40,11 +62,6 @@ const handleDeleteRole = async (roleId: string) => {
 };
 
 const handleRoleClick = (role: Role) => {
-  // Navigate to chat with this role
-  navigateTo(`/chat/${role.id}`);
-};
-
-const handleMemoryClick = (role: Role) => {
   // Navigate to memory management for this role
   navigateTo(`/role/${role.id}/memory`);
 };
@@ -98,15 +115,17 @@ onMounted(async () => {
         <span class="text-2xl">{{ role.name }}</span>
         <span class="text-md text-black/50">{{ role.description }}</span>
       </div>
-      <div class="flex space-x-2 opacity-100 transition-opacity">
-        <UButton
-          icon="material-symbols:auto-stories"
-          variant="ghost"
-          color="primary"
-          size="sm"
-          @click.stop="handleMemoryClick(role)"
-          title="管理记忆"
-        />
+
+      <!-- 记忆数量显示 -->
+      <div class="flex flex-col items-center justify-center px-4">
+        <div class="text-2xl font-bold text-primary">
+          {{ memoryCounts[role.id] || 0 }}
+        </div>
+        <div class="text-xs text-gray-500">段记忆</div>
+      </div>
+
+      <!-- 删除按钮 -->
+      <div class="flex-shrink-0">
         <UButton
           icon="material-symbols:delete"
           variant="ghost"

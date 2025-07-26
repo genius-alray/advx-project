@@ -193,10 +193,6 @@ const handleDelete = async (knowledgeId: string) => {
   }
 };
 
-const goBack = () => {
-  navigateTo("/");
-};
-
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString("zh-CN", {
     year: "numeric",
@@ -223,92 +219,40 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div
-    class="min-h-screen w-full bg-primary-50/50 flex flex-col max-w-md mx-auto"
-  >
-    <!-- Header -->
-    <header class="flex items-center p-4 bg-white shadow-sm min-h-0">
-      <UButton
-        icon="material-symbols:arrow-back"
-        variant="ghost"
-        size="sm"
-        class="flex-shrink-0"
-        @click="goBack"
-      />
+  <div class="min-h-screen w-full flex flex-col max-w-md mx-auto">
+    <!-- 角色信息展示 -->
+    <div v-if="role" class="px-4 py-6">
+      <div class="flex items-center space-x-4 mb-4">
+        <!-- 角色头像 -->
+        <div class="w-16 h-16 rounded-full overflow-hide flex-shrink-0">
+          <img
+            v-if="role.avatar"
+            :src="role.avatar"
+            :alt="role.name"
+            class="w-full h-full object-cover"
+          />
+          <div
+            v-else
+            class="w-full h-full flex items-center justify-center text-gray-400"
+          >
+            <Icon name="material-symbols:person" class="text-2xl" />
+          </div>
+        </div>
 
-      <div v-if="role" class="flex items-center ml-4 flex-1 min-w-0">
-        <UAvatar
-          :src="role.avatar || undefined"
-          size="md"
-          class="flex-shrink-0"
-        />
-        <div class="ml-3 min-w-0 flex-1">
-          <h1 class="text-lg font-bold truncate">{{ role.name }} 的记忆</h1>
-          <p class="text-sm text-gray-500 truncate">管理角色的记忆和故事</p>
+        <!-- 角色信息 -->
+        <div class="flex-1">
+          <h2 class="text-xl font-semibold text-gray-800">{{ role.name }}</h2>
+          <p class="text-sm text-gray-500 mt-1">{{ role.description }}</p>
+        </div>
+
+        <!-- 记忆数量 -->
+        <div class="text-center">
+          <div class="text-2xl font-bold text-primary">
+            {{ knowledge.length }}
+          </div>
+          <div class="text-xs text-gray-500">段记忆</div>
         </div>
       </div>
-    </header>
-
-    <!-- Add memory form -->
-    <div class="p-4 bg-white shadow-sm flex-shrink-0">
-      <form class="space-y-4" @submit.prevent="handleAddMemory">
-        <UTextarea
-          v-model="newMemory"
-          placeholder="输入一段关于这个角色的记忆、故事或对话..."
-          :rows="3"
-          class="w-full resize-none"
-          :disabled="isAdding"
-        />
-
-        <div class="flex flex-wrap gap-2">
-          <UButton
-            type="submit"
-            icon="material-symbols:add"
-            :loading="isAdding"
-            :disabled="!newMemory.trim()"
-            class="flex-shrink-0"
-          >
-            添加记忆
-          </UButton>
-
-          <UButton
-            type="button"
-            icon="material-symbols:upload-file"
-            variant="outline"
-            :loading="isUploading"
-            :disabled="isAdding || isUploading"
-            class="flex-shrink-0"
-            @click="triggerFileUpload"
-          >
-            {{ isUploading ? "上传中..." : "上传文件" }}
-          </UButton>
-
-          <input
-            ref="fileInputRef"
-            type="file"
-            accept=".txt,.md,.json"
-            class="hidden"
-            @change="handleFileUpload"
-          />
-        </div>
-
-        <UAlert
-          v-if="error"
-          color="error"
-          variant="soft"
-          :title="error"
-          class="mb-4"
-        />
-
-        <UAlert
-          v-if="uploadError"
-          color="error"
-          variant="soft"
-          :title="uploadError"
-          class="mb-4"
-          @close="uploadError = null"
-        />
-      </form>
     </div>
 
     <!-- Loading state -->
@@ -336,17 +280,13 @@ onMounted(async () => {
       />
     </div>
 
-    <!-- Knowledge list -->
-    <div v-else class="pb-6">
-      <div class="px-4 pt-6 space-y-4">
-        <div class="text-sm text-gray-600 px-2">
-          已保存 {{ knowledge.length }} 段记忆
-        </div>
-
+    <!-- 记忆卡片列表 -->
+    <div v-else class="px-4 pb-6">
+      <div class="grid gap-4">
         <div
           v-for="(item, index) in knowledge"
           :key="item.id"
-          class="bg-white rounded-xl p-5 shadow-sm overflow-hidden"
+          class="bg-white rounded-xl p-5 shadow-md hover:shadow-lg transition-shadow border border-gray-100"
         >
           <!-- Edit mode -->
           <div v-if="editingKnowledge?.id === item.id" class="space-y-3">
@@ -377,25 +317,38 @@ onMounted(async () => {
 
           <!-- View mode -->
           <div v-else>
-            <div class="flex items-start justify-between mb-3 min-w-0">
-              <div class="flex items-center space-x-2 min-w-0 flex-1">
-                <Icon
-                  :name="
-                    item.type === 'file'
-                      ? 'material-symbols:description'
-                      : 'material-symbols:chat'
-                  "
-                  class="text-primary flex-shrink-0 text-lg"
-                />
-                <span class="text-sm text-gray-500 truncate">
-                  记忆 #{{ index + 1 }} · {{ formatDate(item.createdAt) }}
-                </span>
+            <!-- 卡片头部 -->
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center space-x-3">
+                <div
+                  class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center"
+                >
+                  <Icon
+                    :name="
+                      item.type === 'file'
+                        ? 'material-symbols:description'
+                        : 'material-symbols:chat'
+                    "
+                    class="text-primary text-sm"
+                  />
+                </div>
+                <div>
+                  <div class="text-sm font-medium text-gray-800">
+                    记忆 #{{ index + 1 }}
+                  </div>
+                  <div class="text-xs text-gray-500">
+                    {{ formatDate(item.createdAt) }}
+                  </div>
+                </div>
               </div>
-              <div class="flex space-x-1 flex-shrink-0 ml-2">
+
+              <!-- 操作按钮 -->
+              <div class="flex space-x-1">
                 <UButton
                   icon="material-symbols:edit"
                   variant="ghost"
                   size="xs"
+                  class="opacity-60 hover:opacity-100"
                   @click="startEdit(item)"
                 />
                 <UButton
@@ -403,15 +356,20 @@ onMounted(async () => {
                   variant="ghost"
                   color="error"
                   size="xs"
+                  class="opacity-60 hover:opacity-100"
                   @click="handleDelete(item.id)"
                 />
               </div>
             </div>
-            <p
-              class="text-gray-800 leading-relaxed whitespace-pre-wrap break-words"
-            >
-              {{ item.content }}
-            </p>
+
+            <!-- 记忆内容 -->
+            <div class="bg-gray-50 rounded-lg p-4">
+              <p
+                class="text-gray-800 leading-relaxed whitespace-pre-wrap break-words text-sm"
+              >
+                {{ item.content }}
+              </p>
+            </div>
           </div>
         </div>
       </div>

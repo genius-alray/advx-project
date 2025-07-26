@@ -1,16 +1,51 @@
 <script setup lang="ts">
 const route = useRoute();
-const name = computed(
-  () =>
-    ({
+
+// 页面标题配置
+const name = computed(() => {
+  // 记忆管理页面特殊处理
+  if (route.path.includes("/memory")) {
+    return "记忆收录";
+  }
+
+  return (
+    {
       "/": "记忆回廊",
       "/voice": "语音管理",
       "/b": "对话历史",
       "/c": "个人中心",
-    }[route.path] || "我们的回响")
-);
+    }[route.path] || "我们的回响"
+  );
+});
+
+// 判断是否显示返回按钮
+const showBackButton = computed(() => {
+  return route.path.includes("/memory") || route.path.includes("/chat/");
+});
+
+// 判断是否显示加号按钮
+const showAddButton = computed(() => {
+  return route.name === "index" || route.path.includes("/memory");
+});
 
 const isDrawerOpen = ref(false);
+
+// 返回按钮处理
+const handleBack = () => {
+  if (route.path.includes("/memory")) {
+    navigateTo("/");
+  } else {
+    history.back();
+  }
+};
+
+// 获取当前角色ID（用于记忆管理页面）
+const currentRoleId = computed(() => {
+  if (route.path.includes("/memory")) {
+    return route.params.id as string;
+  }
+  return null;
+});
 
 const handleRoleCreated = async () => {
   isDrawerOpen.value = false;
@@ -26,6 +61,15 @@ const handleRoleCreated = async () => {
   }
 };
 
+const handleMemoryCreated = async () => {
+  isDrawerOpen.value = false;
+
+  // 刷新记忆管理页面
+  if (route.path.includes("/memory") && process.client) {
+    window.location.reload();
+  }
+};
+
 const handleDrawerClose = () => {
   isDrawerOpen.value = false;
 };
@@ -35,16 +79,36 @@ const handleDrawerClose = () => {
   <UContainer
     class="max-w-md bg-primary-50/50 p-0 pt-8 h-screen w-screen flex flex-col max-h-screen"
   >
-    <header class="flex px-4 sticky">
-      <span class="text-3xl font-bold">{{ name }}</span>
-      <span class="flex-1" />
-      <UDrawer v-if="route.name == 'index'" v-model="isDrawerOpen">
-        <Icon
-          name="material-symbols:add-circle-outline"
-          class="text-4xl text-primary"
-        />
+    <header class="flex items-center px-4 py-2 bg-transparent">
+      <!-- 返回按钮 -->
+      <UButton
+        v-if="showBackButton"
+        icon="material-symbols:arrow-back"
+        variant="ghost"
+        size="sm"
+        @click="handleBack"
+      />
+
+      <!-- 页面标题 -->
+      <h1 class="text-2xl font-bold text-gray-800 ml-4 flex-1">{{ name }}</h1>
+
+      <!-- 加号按钮 -->
+      <UDrawer v-if="showAddButton" v-model="isDrawerOpen">
+        <UButton icon="material-symbols:add" variant="ghost" size="sm" />
         <template #content>
-          <RoleEdit @close="handleDrawerClose" @created="handleRoleCreated" />
+          <!-- 首页：角色创建 -->
+          <RoleEdit
+            v-if="route.name === 'index'"
+            @close="handleDrawerClose"
+            @created="handleRoleCreated"
+          />
+          <!-- 记忆管理页面：记忆添加 -->
+          <MemoryAdd
+            v-else-if="route.path.includes('/memory') && currentRoleId"
+            :role-id="currentRoleId"
+            @close="handleDrawerClose"
+            @created="handleMemoryCreated"
+          />
         </template>
       </UDrawer>
     </header>
@@ -62,11 +126,11 @@ const handleDrawerClose = () => {
       />
       <FooterButton
         icon="streamline-plump-color:chat-bubble-oval-smiley-1"
-        target="/b"
+        target="/threads"
       />
       <FooterButton
         icon="streamline-plump-color:user-single-neutral-male"
-        target="/c"
+        target="/setting"
       />
     </footer>
     <div
