@@ -22,7 +22,7 @@ const loadUserVoices = async () => {
   isLoadingVoices.value = true;
   try {
     userVoices.value = await $fetch<{ id: string; name: string }[]>(
-      "/api/voice/all"
+      "/api/voice/list"
     );
   } catch (err) {
     console.error("Failed to load user voices:", err);
@@ -144,7 +144,8 @@ const handleSubmit = async () => {
   <div class="flex flex-col justify-center items-center py-8 px-4 space-y-2">
     <!-- 头像上传按钮 -->
     <div
-      class="mb-8 text-primary/50 space-y-2 font-bold flex items-center flex-col">
+      class="mb-8 text-primary/50 space-y-2 font-bold flex items-center flex-col"
+    >
       <UFileUpload
         v-model="avatarFile"
         variant="button"
@@ -152,7 +153,8 @@ const handleSubmit = async () => {
         icon="material-symbols:account-circle"
         size="xl"
         class="text-primary size-10"
-        @update:model-value="handleAvatarUpload" />
+        @update:model-value="handleAvatarUpload"
+      />
       <span>设置头像</span>
     </div>
 
@@ -163,14 +165,16 @@ const handleSubmit = async () => {
         class="w-full"
         size="xl"
         required
-        :disabled="isCreating" />
+        :disabled="isCreating"
+      />
 
       <UInput
         v-model="form.description"
         placeholder="身份/描述"
         class="w-full"
         size="xl"
-        :disabled="isCreating" />
+        :disabled="isCreating"
+      />
 
       <UTextarea
         v-model="form.background"
@@ -179,7 +183,8 @@ const handleSubmit = async () => {
         :rows="3"
         class="w-full"
         size="xl"
-        :disabled="isCreating" />
+        :disabled="isCreating"
+      />
 
       <!-- 语音选择 -->
       <div class="space-y-2">
@@ -192,7 +197,8 @@ const handleSubmit = async () => {
           size="xl"
           color="primary"
           :disabled="isCreating || isLoadingVoices"
-          :loading="isLoadingVoices" />
+          :loading="isLoadingVoices"
+        />
       </div>
 
       <UAlert
@@ -200,14 +206,16 @@ const handleSubmit = async () => {
         color="error"
         variant="soft"
         :title="formError"
-        class="mb-4" />
+        class="mb-4"
+      />
 
       <div class="w-full flex mt-4 justify-center">
         <UButton
           type="submit"
           size="xl"
           :loading="isCreating"
-          :disabled="!form.name.trim() || isCreating">
+          :disabled="!form.name.trim() || isCreating"
+        >
           完成
         </UButton>
       </div>
