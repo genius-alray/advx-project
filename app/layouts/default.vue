@@ -1,6 +1,6 @@
 <template>
   <UContainer
-    class="max-w-md bg-primary-50/50 p-0 pt-8 h-screen w-screen flex flex-col max-h-screen font-semibold">
+    class="max-w-md bg-primary-50/50 p-0 pt-8 h-dvh w-screen flex flex-col max-h-screen font-semibold">
     <slot />
     <footer
       class="h-20 bg-white rounded-tl-2xl rounded-tr-2xl flex justify-between shadow-xl shadow-slate-400">

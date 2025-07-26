@@ -32,7 +32,7 @@ watch(
 
 <template>
   <UContainer
-    class="max-w-md bg-primary-50 p-0 h-screen w-screen flex justify-center overflow-hidden">
+    class="max-w-md bg-primary-50 p-0 h-dvh w-screen flex justify-center overflow-hidden">
     <div class="flex flex-col justify-center w-3xs space-y-4">
       <NuxtImg src="/loginHero.svg" class="mb-8" />
       <form class="space-y-4" @submit.prevent="handleLogin">

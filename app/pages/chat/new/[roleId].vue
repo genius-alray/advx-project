@@ -46,7 +46,7 @@ onMounted(async () => {
 
 <template>
   <div
-    class="h-screen w-full bg-primary-50/50 flex items-center justify-center max-w-md mx-auto">
+    class="h-dvh w-full bg-primary-50/50 flex items-center justify-center max-w-md mx-auto">
     <!-- Loading state -->
     <div
       v-if="isLoading"

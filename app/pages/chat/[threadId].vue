@@ -207,7 +207,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <UContainer class="bg-primary-50 w-screen h-screen flex flex-col p-0">
+  <UContainer class="bg-primary-50 w-screen h-dvh flex flex-col p-0">
     <header v-if="role" class="flex items-center p-4 min-h-0">
       <BackIcon />
 
