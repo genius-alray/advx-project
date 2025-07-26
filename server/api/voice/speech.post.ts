@@ -1,6 +1,5 @@
-import { Client } from "@gradio/client";
 import z from "zod";
-
+import { Client } from "~~/server/gradio/index";
 import { voiceManager } from "~~/server/service/voiceManager";
 
 const bodySchema = z.object({
