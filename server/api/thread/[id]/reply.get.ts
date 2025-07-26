@@ -4,9 +4,9 @@ import { roleManager } from "~~/server/service/roleManager";
 import { threadManager } from "~~/server/service/threadManager";
 
 const config = useRuntimeConfig();
-const deepseek = new OpenAI({
+const ai = new OpenAI({
   apiKey: config.deepseekApiKey,
-  baseURL: "https://api.deepseek.com",
+  baseURL: "https://api.moonshot.cn/v1",
 });
 
 /**
@@ -57,8 +57,8 @@ export default defineEventHandler(async (event) => {
 
 如果用户询问相关的记忆或故事，你可以参考上面提供的记忆内容来回答，但要以第一人称的方式，就像是你自己的亲身经历一样。`;
 
-    const completion = await deepseek.chat.completions.create({
-      model: "deepseek-chat",
+    const completion = await ai.chat.completions.create({
+      model: "kimi-latest",
       messages: [
         { role: "system" as const, content: systemPrompt },
         ...messages,

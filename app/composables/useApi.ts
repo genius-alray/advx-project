@@ -276,6 +276,27 @@ export const useVoices = () => {
     }
   };
 
+  const synthesizeSpeech = async (
+    text: string,
+    roleId: string
+  ): Promise<string | null> => {
+    try {
+      pending.value = true;
+      error.value = null;
+      const audioUrl = await $fetch<string>("/api/voice/speech", {
+        method: "POST",
+        body: { text, roleId },
+      });
+      return audioUrl;
+    } catch (err) {
+      error.value =
+        err instanceof Error ? err.message : "Failed to synthesize speech";
+      return null;
+    } finally {
+      pending.value = false;
+    }
+  };
+
   return {
     pending: readonly(pending),
     error: readonly(error),
@@ -283,6 +304,7 @@ export const useVoices = () => {
     fetchUserVoices,
     fetchUserVoiceList,
     fetchUserVoiceDetails,
+    synthesizeSpeech,
   };
 };
 

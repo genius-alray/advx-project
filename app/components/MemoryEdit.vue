@@ -41,7 +41,8 @@ function startRecording() {
       <h2 class="text-xl font-medium text-primary">新增记忆</h2>
       <NuxtImg
         src="/photo.svg"
-        class="w-6 h-6 rounded-full scale-150 translate-y-2" />
+        class="w-6 h-6 rounded-full scale-150 translate-y-2"
+      />
     </div>
 
     <!-- 输入区域 -->
@@ -50,14 +51,17 @@ function startRecording() {
         v-model="memoryName"
         placeholder="设置记忆名称"
         size="xl"
-        class="w-full" />
+        class="w-full"
+      />
       <UTextarea
         v-model="memoryContent"
         placeholder="写下记忆"
         type="textarea"
         size="xl"
         autoresize
-        class="w-full" />
+        :maxrows="10"
+        class="w-full"
+      />
     </div>
 
     <!-- 功能按钮 -->
@@ -67,20 +71,23 @@ function startRecording() {
         size="xl"
         class="size-16 rounded-full text-4xl flex justify-center items-center"
         icon="streamline-plump-color:file-folder"
-        @click="uploadFile" />
+        @click="uploadFile"
+      />
       <UButton
         variant="soft"
         size="xl"
         class="size-16 rounded-full text-4xl flex justify-center items-center"
         icon="streamline-plump-color:voice-mail"
-        @click="startRecording" />
+        @click="startRecording"
+      />
     </div>
 
     <!-- 完成按钮 -->
     <UButton
       size="xl"
       :disabled="!memoryName.trim() || !memoryContent.trim()"
-      @click="submitMemory">
+      @click="submitMemory"
+    >
       完成
     </UButton>
   </div>
