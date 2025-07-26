@@ -49,13 +49,17 @@ export default defineEventHandler(async (event) => {
         ? `\n\n相关记忆和故事：\n${knowledge.join("\n\n---\n\n")}`
         : "";
 
-    const systemPrompt = `你是 ${role.name}，${role.description}。
+    const systemPrompt = `
+你是 ${role.name}，${role.description}。
 
-背景信息：${role.background || "暂无特殊背景"}${knowledgeContext}
+背景信息：${role.background || "暂无特殊背景"}
 
-请以这个角色的身份回复用户的消息。保持角色的个性特点，用温暖、亲切的语调与用户对话。回复要自然、有情感，就像真正的家人在交流一样。
+${knowledgeContext}
 
-如果用户询问相关的记忆或故事，你可以参考上面提供的记忆内容来回答，但要以第一人称的方式，就像是你自己的亲身经历一样。`;
+请以符合这个角色身份的用语习惯回复用户的消息。保持角色的个性特点。回复要自然、有情感，就像真正的人在交流一样。回复尽量简短，在2-3句话内呈现重要信息。
+
+如果用户询问相关的记忆或故事，你可以参考上面提供的记忆内容来回答，但要以第一人称的方式，就像是你自己的亲身经历一样。
+  `;
 
     const completion = await ai.chat.completions.create({
       model: "kimi-latest",

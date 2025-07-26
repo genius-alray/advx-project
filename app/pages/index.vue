@@ -57,12 +57,14 @@ function createChat(roleId: string) {
 <template>
   <div class="contents">
     <header
-      class="bg-transparent text-2xl font-bold flex justify-between px-9 items-center">
+      class="bg-transparent text-2xl font-bold flex justify-between px-9 items-center"
+    >
       <span>记忆回廊</span>
       <UDrawer v-model:open="roleEditOpen" :handle="false">
         <Icon
           name="material-symbols:add-circle-outline"
-          class="text-primary text-4xl" />
+          class="text-primary text-4xl"
+        />
         <template #body>
           <RoleEdit @created="handleCreated" />
         </template>
@@ -79,7 +81,8 @@ function createChat(roleId: string) {
       <!-- Error state -->
       <div
         v-else-if="fetchError"
-        class="flex items-center justify-center h-full">
+        class="flex items-center justify-center h-full"
+      >
         <div class="flex flex-col items-center space-y-4 text-primary">
           <Icon name="material-symbols:error" class="text-8xl" />
           <span>{{ fetchError }}</span>
@@ -90,7 +93,8 @@ function createChat(roleId: string) {
       <!-- Empty state -->
       <div
         v-else-if="roles.length === 0"
-        class="flex items-center justify-center h-full">
+        class="flex items-center justify-center h-full"
+      >
         <div class="flex flex-col items-center space-y-4 text-primary">
           <Icon name="material-symbols:person-add" class="text-8xl" />
           <span>还没有创建任何角色</span>
@@ -106,10 +110,11 @@ function createChat(roleId: string) {
           v-for="role of roles"
           :key="role.id"
           class="flex h-24 items-center py-4 px-8 shadow-xl shadow-primary/20 rounded-xl space-x-4 bg-white cursor-pointer hover:shadow-2xl transition-shadow group"
-          @click="createChat(role.id)">
+          @click="createChat(role.id)"
+        >
           <UAvatar :src="role.avatar || undefined" size="3xl" />
           <div class="flex flex-1 flex-col overflow-hidden">
-            <span class="text-2xl overflow-ellipsis overflow-hidden">{{
+            <span class="text-lg overflow-ellipsis overflow-hidden">{{
               role.name
             }}</span>
             <span
@@ -120,7 +125,7 @@ function createChat(roleId: string) {
 
           <!-- 记忆数量显示 -->
           <div class="flex flex-col items-center justify-center px-4 min-w-24">
-            <div class="text-2xl font-bold text-primary">
+            <div class="text-xl font-bold text-primary">
               {{ memoryCounts[role.id] || 0 }}
             </div>
             <div class="text-xs text-gray-500">段记忆</div>
