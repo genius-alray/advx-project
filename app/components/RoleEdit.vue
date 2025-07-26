@@ -141,10 +141,10 @@ const handleSubmit = async () => {
 </script>
 
 <template>
-  <div class="flex flex-col justify-center items-center p-8 space-y-2">
+  <div class="flex flex-col justify-center items-center py-8 px-4 space-y-2">
     <!-- 头像上传按钮 -->
     <div
-      class="mb-8 text-primary space-y-2 font-bold flex items-center flex-col">
+      class="mb-8 text-primary/50 space-y-2 font-bold flex items-center flex-col">
       <UFileUpload
         v-model="avatarFile"
         variant="button"

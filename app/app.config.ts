@@ -50,6 +50,11 @@ export default defineAppConfig({
         },
       },
     },
+    separator: {
+      slots: {
+        container: "font-bold text-primary flex",
+      },
+    },
   },
   icon: {
     customize: (content: string) => {

@@ -11,7 +11,7 @@ const form = reactive({
 });
 
 const formError = ref<string | null>(null);
-
+const router = useRouter();
 const handleRegister = async () => {
   formError.value = null;
 
@@ -37,7 +37,7 @@ const handleRegister = async () => {
   });
 
   if (success) {
-    await navigateTo("/login");
+    await router.push("/login");
   }
 };
 
@@ -46,7 +46,7 @@ watch(
   isAuthenticated,
   (authenticated) => {
     if (authenticated) {
-      navigateTo("/");
+      router.push("/");
     }
   },
   { immediate: true }

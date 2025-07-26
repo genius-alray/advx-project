@@ -1,12 +1,12 @@
 <script setup lang="ts">
 const { user, logout, isAuthenticated } = useAuth();
-
+const router = useRouter();
 // Redirect to login if not authenticated
 watch(
   isAuthenticated,
   (authenticated) => {
     if (!authenticated) {
-      navigateTo("/login");
+      router.replace("/login");
     }
   },
   { immediate: true }
@@ -15,7 +15,7 @@ watch(
 const handleLogout = async () => {
   const success = await logout();
   if (success) {
-    await navigateTo("/login");
+    await router.push("/login");
   }
 };
 
@@ -31,7 +31,7 @@ const menuItems = [
     icon: "material-symbols:mic",
     label: "语音管理",
     action: () => {
-      navigateTo("/voice");
+      router.push("/voice");
     },
   },
 

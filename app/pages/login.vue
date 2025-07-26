@@ -7,7 +7,7 @@ const form = reactive({
   id: "",
   password: "",
 });
-
+const router = useRouter();
 const handleLogin = async () => {
   if (!form.id || !form.password) {
     return;
@@ -15,7 +15,7 @@ const handleLogin = async () => {
 
   const success = await login(form);
   if (success) {
-    await navigateTo("/");
+    await router.push("/");
   }
 };
 
@@ -24,7 +24,7 @@ watch(
   isAuthenticated,
   (authenticated) => {
     if (authenticated) {
-      navigateTo("/");
+      router.push("/");
     }
   },
   { immediate: true }

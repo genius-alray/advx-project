@@ -31,9 +31,10 @@ function handleCreated() {
   roleEditOpen.value = false;
   refresh();
 }
+const router = useRouter();
 const handleRoleClick = (role: Role) => {
   // Navigate to memory management for this role
-  navigateTo(`/role/${role.id}/memory`);
+  router.push(`/role/${role.id}/memory`);
 };
 </script>
 
