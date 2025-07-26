@@ -125,7 +125,6 @@ const editOpen = ref(false);
               class="text-xl" />
             <span>
               {{ item.name }}
-              aaa
             </span>
           </div>
         </div>
