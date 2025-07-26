@@ -5,7 +5,6 @@ const props = defineProps<{
   roleId: string;
 }>();
 
-// 简单的响应式状态
 const newMemory = ref("");
 const isAdding = ref(false);
 const isUploading = ref(false);
@@ -13,7 +12,6 @@ const uploadError = ref<string | null>(null);
 const error = ref<string | null>(null);
 const fileInputRef = ref<HTMLInputElement | null>(null);
 
-// 直接添加记忆
 const handleAddMemory = async () => {
   if (!newMemory.value.trim() || isAdding.value) return;
 
@@ -37,13 +35,12 @@ const handleAddMemory = async () => {
     alert(
       `添加记忆时发生错误: ${err instanceof Error ? err.message : "未知错误"}`
     );
-    newMemory.value = memoryText; // 恢复输入内容
+    newMemory.value = memoryText;
   } finally {
     isAdding.value = false;
   }
 };
 
-// 文件上传处理
 const handleFileUpload = async (event: Event) => {
   const target = event.target as HTMLInputElement;
   const file = target.files?.[0];
@@ -91,7 +88,6 @@ const handleFileUpload = async (event: Event) => {
   }
 };
 
-// 触发文件选择
 const triggerFileUpload = () => {
   fileInputRef.value?.click();
 };
@@ -105,8 +101,7 @@ const triggerFileUpload = () => {
         icon="material-symbols:close"
         variant="ghost"
         size="sm"
-        @click="emits('close')"
-      />
+        @click="emits('close')" />
     </div>
 
     <form class="space-y-4" @submit.prevent="handleAddMemory">
@@ -115,8 +110,7 @@ const triggerFileUpload = () => {
         placeholder="输入一段关于这个角色的记忆、故事或对话..."
         :rows="4"
         class="w-full resize-none"
-        :disabled="isAdding"
-      />
+        :disabled="isAdding" />
 
       <div class="flex flex-wrap gap-2">
         <UButton
@@ -124,8 +118,7 @@ const triggerFileUpload = () => {
           icon="material-symbols:add"
           :loading="isAdding"
           :disabled="!newMemory.trim()"
-          class="flex-shrink-0"
-        >
+          class="flex-shrink-0">
           添加记忆
         </UButton>
 
@@ -136,8 +129,7 @@ const triggerFileUpload = () => {
           :loading="isUploading"
           :disabled="isAdding || isUploading"
           class="flex-shrink-0"
-          @click="triggerFileUpload"
-        >
+          @click="triggerFileUpload">
           {{ isUploading ? "上传中..." : "上传文件" }}
         </UButton>
 
@@ -146,8 +138,7 @@ const triggerFileUpload = () => {
           type="file"
           accept=".txt,.md,.json"
           class="hidden"
-          @change="handleFileUpload"
-        />
+          @change="handleFileUpload" />
       </div>
 
       <UAlert
@@ -155,8 +146,7 @@ const triggerFileUpload = () => {
         color="error"
         variant="soft"
         :title="error"
-        class="mb-4"
-      />
+        class="mb-4" />
 
       <UAlert
         v-if="uploadError"
@@ -164,8 +154,7 @@ const triggerFileUpload = () => {
         variant="soft"
         :title="uploadError"
         class="mb-4"
-        @close="uploadError = null"
-      />
+        @close="uploadError = null" />
     </form>
   </div>
 </template>

@@ -6,9 +6,9 @@ import type { Thread } from "~~/shared/types/thread";
 definePageMeta({ layout: false });
 
 const route = useRoute();
+const router = useRouter();
 const threadId = route.params.threadId as string;
 
-// 简单的响应式状态
 const role = ref<Role | null>(null);
 const thread = ref<Thread | null>(null);
 const messages = ref<Message[]>([]);
@@ -19,10 +19,8 @@ const chatContainer = ref<HTMLElement>();
 const lastFailedMessage = ref<string | null>(null);
 const error = ref<string | null>(null);
 
-// 加载thread和相关的role数据
 const loadThreadAndRole = async () => {
   try {
-    // 首先获取thread数据
     const threadData = await $fetch<Thread>(`/api/thread/${threadId}/content`);
     if (!threadData) {
       throw new Error("Thread not found");
@@ -30,7 +28,6 @@ const loadThreadAndRole = async () => {
     thread.value = threadData;
     messages.value = threadData.content || [];
 
-    // 然后获取对应的role数据
     const roles = await $fetch<Role[]>("/api/role/all");
     role.value = roles.find((r: Role) => r.id === threadData.roleId) || null;
     if (!role.value) {
@@ -50,7 +47,6 @@ const handleSendMessage = async () => {
   isSending.value = true;
 
   try {
-    // Add user message to local state immediately
     const userMessage: Message = {
       id: Date.now().toString(),
       sender: "user",
@@ -60,24 +56,20 @@ const handleSendMessage = async () => {
     };
     messages.value.push(userMessage);
 
-    // Scroll to bottom after adding user message
     nextTick(() => {
       scrollToBottom();
     });
 
-    // 直接发送消息到后端
     await $fetch(`/api/thread/${thread.value.id}/text`, {
       method: "POST",
       body: { message: messageText },
     });
 
-    // 直接获取 AI 回复
     const replyResult = await $fetch<{ success: boolean; message?: string }>(
       `/api/thread/${thread.value.id}/reply`
     );
 
     if (replyResult.success && replyResult.message) {
-      // Add AI message to local state immediately
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         sender: "ai",
@@ -87,12 +79,10 @@ const handleSendMessage = async () => {
       };
       messages.value.push(aiMessage);
 
-      // Scroll to bottom after adding AI message
       nextTick(() => {
         scrollToBottom();
       });
     } else {
-      // 如果 AI 回复失败，重新获取对话内容
       const updatedThread = await $fetch<Thread>(
         `/api/thread/${thread.value.id}/content`
       );
@@ -105,10 +95,9 @@ const handleSendMessage = async () => {
     }
   } catch (err) {
     console.error("Failed to send message:", err);
-    // Store the failed message for retry
+
     lastFailedMessage.value = messageText;
 
-    // Show error message to user
     const errorMessage: Message = {
       id: (Date.now() + 2).toString(),
       sender: "ai",
@@ -132,7 +121,6 @@ const goBack = () => {
   navigateTo("/threads");
 };
 
-// 页面初始化 - 加载现有的thread和role数据
 onMounted(async () => {
   isLoading.value = true;
   try {
@@ -148,7 +136,7 @@ onMounted(async () => {
 
 <template>
   <UContainer class="bg-primary-50 w-screen h-screen flex flex-col p-0">
-    <header class="flex items-center p-4 min-h-0">
+    <header v-if="role" class="flex items-center p-4 min-h-0">
       <BackIcon />
 
       <div
@@ -164,6 +152,10 @@ onMounted(async () => {
           </div>
         </div>
       </div>
+      <Icon
+        name="tabler:menu-deep"
+        class="text-primary"
+        @click="router.push(`/role/${role.id}/memory`)" />
     </header>
     <main class="flex-1 overflow-auto">
       <!-- Loading state -->

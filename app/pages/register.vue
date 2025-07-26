@@ -41,7 +41,6 @@ const handleRegister = async () => {
   }
 };
 
-// Redirect if already authenticated
 watch(
   isAuthenticated,
   (authenticated) => {
@@ -55,27 +54,24 @@ watch(
 
 <template>
   <UContainer
-    class="max-w-md bg-primary-50 p-0 h-screen w-screen flex justify-center overflow-hidden"
-  >
+    class="max-w-md bg-primary-50 p-0 h-screen w-screen flex justify-center overflow-hidden">
     <div class="flex flex-col justify-center w-3xs space-y-4">
       <NuxtImg src="/loginHero.svg" class="mb-8" />
 
-      <form @submit.prevent="handleRegister" class="space-y-4">
+      <form class="space-y-4" @submit.prevent="handleRegister">
         <UInput
           v-model="form.id"
           placeholder="用户ID"
           size="xl"
           required
-          :disabled="pending"
-        />
+          :disabled="pending" />
 
         <UInput
           v-model="form.name"
           placeholder="用户名"
           size="xl"
           required
-          :disabled="pending"
-        />
+          :disabled="pending" />
 
         <UInput
           v-model="form.password"
@@ -83,8 +79,7 @@ watch(
           placeholder="密码"
           size="xl"
           required
-          :disabled="pending"
-        />
+          :disabled="pending" />
 
         <UInput
           v-model="form.confirmPassword"
@@ -92,16 +87,14 @@ watch(
           placeholder="确认密码"
           size="xl"
           required
-          :disabled="pending"
-        />
+          :disabled="pending" />
 
         <UAlert
           v-if="error || formError"
           color="error"
           variant="soft"
           :title="error || formError"
-          class="mb-4"
-        />
+          class="mb-4" />
 
         <UButton
           type="submit"
@@ -111,8 +104,7 @@ watch(
           :loading="pending"
           :disabled="
             !form.id || !form.name || !form.password || !form.confirmPassword
-          "
-        >
+          ">
           注册
         </UButton>
       </form>

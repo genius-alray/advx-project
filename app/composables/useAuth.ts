@@ -18,10 +18,8 @@ export const useAuth = () => {
   const error = ref<string | null>(null);
   const user = ref<{ id: string; name: string } | null>(null);
 
-  // Get current user session
   const { user: session, fetch: refreshSession } = useUserSession();
 
-  // Update local user state when session changes
   watch(
     session,
     (newSession) => {

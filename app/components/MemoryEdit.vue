@@ -2,14 +2,11 @@
 const { id: roleId } = defineProps<{ id: string }>();
 const emits = defineEmits(["finish"]);
 
-// 获取API和路由实例
-const router = useRouter();
 const toast = useToast();
-// 表单数据
+
 const memoryName = ref("");
 const memoryContent = ref("");
 
-// 提交表单
 const submitMemory = async () => {
   try {
     await $fetch(`/api/role/${roleId}/knowledge`, {
@@ -29,6 +26,12 @@ const submitMemory = async () => {
     });
   }
 };
+function uploadFile() {
+  toast.add({ title: "未知错误", color: "error" });
+}
+function startRecording() {
+  toast.add({ title: "未知错误", color: "error" });
+}
 </script>
 
 <template>
@@ -63,12 +66,14 @@ const submitMemory = async () => {
         variant="soft"
         size="xl"
         class="size-16 rounded-full text-4xl flex justify-center items-center"
-        icon="streamline-plump-color:file-folder" />
+        icon="streamline-plump-color:file-folder"
+        @click="uploadFile" />
       <UButton
         variant="soft"
         size="xl"
         class="size-16 rounded-full text-4xl flex justify-center items-center"
-        icon="streamline-plump-color:voice-mail" />
+        icon="streamline-plump-color:voice-mail"
+        @click="startRecording" />
     </div>
 
     <!-- 完成按钮 -->

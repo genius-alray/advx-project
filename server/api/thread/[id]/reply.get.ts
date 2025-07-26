@@ -1,9 +1,8 @@
-import { threadManager } from "~~/server/service/threadManager";
-import { roleManager } from "~~/server/service/roleManager";
-import { knowledgeManager } from "~~/server/service/knowledgeManager";
 import OpenAI from "openai";
+import { knowledgeManager } from "~~/server/service/knowledgeManager";
+import { roleManager } from "~~/server/service/roleManager";
+import { threadManager } from "~~/server/service/threadManager";
 
-// 初始化 DeepSeek API 客户端
 const config = useRuntimeConfig();
 const deepseek = new OpenAI({
   apiKey: config.deepseekApiKey,
@@ -25,7 +24,6 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  // 获取角色信息
   const role = await roleManager.instance.getRole(thread.roleId);
   if (!role) {
     throw createError({
@@ -35,12 +33,10 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    // 获取角色的知识库内容
     const knowledge = await knowledgeManager.instance.getRoleKnowledgeText(
       role.id
     );
 
-    // 构建对话历史
     const messages: Array<{ role: "user" | "assistant"; content: string }> =
       thread.content.map((msg) => ({
         role:
@@ -48,7 +44,6 @@ export default defineEventHandler(async (event) => {
         content: msg.content,
       }));
 
-    // 构建系统提示词，包含知识库信息
     const knowledgeContext =
       knowledge.length > 0
         ? `\n\n相关记忆和故事：\n${knowledge.join("\n\n---\n\n")}`
@@ -62,7 +57,6 @@ export default defineEventHandler(async (event) => {
 
 如果用户询问相关的记忆或故事，你可以参考上面提供的记忆内容来回答，但要以第一人称的方式，就像是你自己的亲身经历一样。`;
 
-    // 调用 DeepSeek API
     const completion = await deepseek.chat.completions.create({
       model: "deepseek-chat",
       messages: [
@@ -76,7 +70,6 @@ export default defineEventHandler(async (event) => {
     const aiResponse =
       completion.choices[0]?.message?.content || "抱歉，我现在无法回复。";
 
-    // 添加 AI 回复到对话中
     await threadManager.instance.addMessage(threadId, {
       id: genUUID4(),
       sender: "ai",
@@ -92,7 +85,6 @@ export default defineEventHandler(async (event) => {
   } catch (error) {
     console.error("DeepSeek API error:", error);
 
-    // 如果 API 调用失败，返回默认回复
     const fallbackMessage = "抱歉，我现在有些忙，稍后再聊好吗？";
 
     await threadManager.instance.addMessage(threadId, {

@@ -1,7 +1,8 @@
 <script setup lang="ts">
-const { user, logout, isAuthenticated } = useAuth();
+const { user, isAuthenticated } = useAuth();
+const { clear: logout } = useUserSession();
 const router = useRouter();
-// Redirect to login if not authenticated
+
 watch(
   isAuthenticated,
   (authenticated) => {
@@ -13,19 +14,15 @@ watch(
 );
 
 const handleLogout = async () => {
-  const success = await logout();
-  if (success) {
-    await router.push("/login");
-  }
+  await logout();
+  await router.push("/login");
 };
 
 const menuItems = [
   {
     icon: "material-symbols:person",
     label: "个人信息",
-    action: () => {
-      // TODO: Navigate to profile edit
-    },
+    action: () => {},
   },
   {
     icon: "material-symbols:mic",
@@ -38,16 +35,12 @@ const menuItems = [
   {
     icon: "material-symbols:settings",
     label: "设置",
-    action: () => {
-      // TODO: Navigate to settings
-    },
+    action: () => {},
   },
   {
     icon: "material-symbols:help",
     label: "帮助与反馈",
-    action: () => {
-      // TODO: Navigate to help
-    },
+    action: () => {},
   },
   {
     icon: "material-symbols:logout",
@@ -79,14 +72,12 @@ const menuItems = [
           :key="item.label"
           class="flex items-center p-4 bg-white rounded-lg shadow-sm cursor-pointer hover:shadow-md transition-shadow"
           :class="{ 'text-red-600': item.danger }"
-          @click="item.action"
-        >
+          @click="item.action">
           <Icon :name="item.icon" class="text-2xl mr-4" />
           <span class="flex-1 font-medium">{{ item.label }}</span>
           <Icon
             name="material-symbols:chevron-right"
-            class="text-xl text-gray-400"
-          />
+            class="text-xl text-gray-400" />
         </div>
       </div>
     </div>

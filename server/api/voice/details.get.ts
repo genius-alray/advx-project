@@ -11,7 +11,6 @@ export default defineEventHandler(async (event) => {
     return [];
   }
 
-  // 获取每个语音的详细信息
   const voiceDetails: Array<{
     id: string;
     name: string;

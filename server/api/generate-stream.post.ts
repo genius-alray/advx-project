@@ -31,11 +31,7 @@ const PROMPT = `
 
 # 长辈文本
 `;
-// `
-// # 输出格式要求
-// 请严格按照以下格式输出，不要添加任何额外的解释：
 
-// `
 const knowledgeStorage = useStorage("memory");
 export default defineEventHandler(async (ev) => {
   const data = (await readBody(ev)) as ChatRequestBody;

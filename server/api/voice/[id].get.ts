@@ -16,7 +16,6 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  // 设置响应头
   setHeader(event, "Content-Type", voice.type || "audio/mpeg");
   setHeader(event, "Content-Length", voice.size.toString());
   setHeader(event, "Cache-Control", "public, max-age=31536000");

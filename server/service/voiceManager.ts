@@ -20,12 +20,11 @@ export class voiceManager extends Singleton<voiceManager>() {
     }
     voices.push(voiceId);
 
-    // Convert Blob to Buffer for storage
     const arrayBuffer = await voice.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
     await this.voices.set(voiceId, {
       name,
-      data: Array.from(buffer), // Convert Buffer to array of numbers for JSON serialization
+      data: Array.from(buffer),
       type: voice.type,
       size: voice.size,
     });
@@ -37,10 +36,10 @@ export class voiceManager extends Singleton<voiceManager>() {
     if (!voiceData) {
       return null;
     }
-    // Convert number array back to Buffer, then to Blob
+
     const buffer = Buffer.from(voiceData.data);
     const blob = new Blob([buffer], { type: voiceData.type });
-    // Manually set the size property (though it should be automatically set)
+
     Object.defineProperty(blob, "size", {
       value: voiceData.size,
       writable: false,

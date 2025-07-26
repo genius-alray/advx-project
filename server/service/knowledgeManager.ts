@@ -38,10 +38,8 @@ export class knowledgeManager extends Singleton<knowledgeManager>() {
       updatedAt: new Date().toISOString(),
     };
 
-    // 存储知识条目
     await this.knowledgeStorage.setItem(`knowledge:${knowledge.id}`, knowledge);
 
-    // 更新角色的知识列表
     const roleKnowledgeKey = `role_knowledge:${roleId}`;
     const existingKnowledgeIds =
       (await this.roleKnowledgeStorage.getItem<string[]>(roleKnowledgeKey)) ||
@@ -73,7 +71,6 @@ export class knowledgeManager extends Singleton<knowledgeManager>() {
       }
     }
 
-    // 按创建时间排序
     return knowledgeList.sort(
       (a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -125,10 +122,8 @@ export class knowledgeManager extends Singleton<knowledgeManager>() {
       return false;
     }
 
-    // 从存储中删除知识条目
     await this.knowledgeStorage.removeItem(`knowledge:${knowledgeId}`);
 
-    // 从角色的知识列表中移除
     const roleKnowledgeKey = `role_knowledge:${knowledge.roleId}`;
     const knowledgeIds =
       (await this.roleKnowledgeStorage.getItem<string[]>(roleKnowledgeKey)) ||
@@ -148,12 +143,10 @@ export class knowledgeManager extends Singleton<knowledgeManager>() {
       (await this.roleKnowledgeStorage.getItem<string[]>(roleKnowledgeKey)) ||
       [];
 
-    // 删除所有知识条目
     for (const id of knowledgeIds) {
       await this.knowledgeStorage.removeItem(`knowledge:${id}`);
     }
 
-    // 删除角色的知识列表
     await this.roleKnowledgeStorage.removeItem(roleKnowledgeKey);
 
     return true;

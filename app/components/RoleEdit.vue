@@ -1,7 +1,6 @@
 <script setup lang="ts">
 const emits = defineEmits(["close", "created"]);
 
-// 简单的响应式状态
 const form = reactive({
   name: "",
   description: "",
@@ -17,7 +16,6 @@ const isLoadingVoices = ref(false);
 const isUploadingAvatar = ref(false);
 const isCreating = ref(false);
 
-// 直接加载用户语音列表
 const loadUserVoices = async () => {
   isLoadingVoices.value = true;
   try {
@@ -31,7 +29,6 @@ const loadUserVoices = async () => {
   }
 };
 
-// 处理头像文件上传
 const handleAvatarUpload = async (file: unknown) => {
   const selectedFile = file as File | null;
   if (!selectedFile) {
@@ -40,13 +37,11 @@ const handleAvatarUpload = async (file: unknown) => {
     return;
   }
 
-  // 检查文件类型
   if (!selectedFile.type.startsWith("image/")) {
     formError.value = "请选择图片文件";
     return;
   }
 
-  // 检查文件大小 (5MB)
   if (selectedFile.size > 5 * 1024 * 1024) {
     formError.value = "图片文件大小不能超过5MB";
     return;
@@ -56,7 +51,6 @@ const handleAvatarUpload = async (file: unknown) => {
   formError.value = null;
 
   try {
-    // 直接在客户端转换为 base64 URL
     const reader = new FileReader();
     reader.onload = (e) => {
       const dataUrl = e.target?.result as string;
@@ -76,7 +70,6 @@ const handleAvatarUpload = async (file: unknown) => {
   }
 };
 
-// 计算语音选项
 const voiceOptions = computed(() => {
   return [
     { value: null, label: "不使用语音" },
@@ -87,12 +80,10 @@ const voiceOptions = computed(() => {
   ];
 });
 
-// 组件初始化 - 加载语音列表
 onMounted(async () => {
   await loadUserVoices();
 });
 
-// 直接提交创建角色
 const handleSubmit = async () => {
   if (isCreating.value) return;
 
@@ -117,7 +108,6 @@ const handleSubmit = async () => {
     });
 
     if (result) {
-      // Reset form first
       Object.assign(form, {
         name: "",
         description: "",
@@ -127,7 +117,6 @@ const handleSubmit = async () => {
       });
       avatarFile.value = null;
 
-      // Emit events to parent
       emits("created", result);
       emits("close");
     }

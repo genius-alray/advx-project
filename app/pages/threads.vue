@@ -7,7 +7,6 @@ const threads = ref<Thread[]>([]);
 const roles = ref<Role[]>([]);
 const isLoading = ref(true);
 
-// Redirect to login if not authenticated
 watch(
   isAuthenticated,
   (authenticated) => {
@@ -44,7 +43,7 @@ const getRoleName = (roleId: string) => {
 const _handleDeleteThread = async (threadId: string) => {
   const success = await deleteThread(threadId);
   if (success) {
-    await loadData(); // Refresh the list
+    await loadData();
   }
 };
 
@@ -52,10 +51,8 @@ const handleThreadClick = (thread: Thread) => {
   navigateTo(`/chat/${thread.id}`);
 };
 
-// 使用页面刷新 composable 确保切换页面时重新加载数据
 usePageRefresh(loadData);
 
-// 监听选项卡刷新事件
 const { onTabRefresh } = useTabNavigation();
 onTabRefresh(loadData);
 </script>
@@ -63,8 +60,7 @@ onTabRefresh(loadData);
 <template>
   <div class="contents">
     <header
-      class="bg-transparent text-2xl font-bold flex justify-between px-9 items-center"
-    >
+      class="bg-transparent text-2xl font-bold flex justify-between px-9 items-center">
       <span>对话历史</span>
     </header>
     <main class="flex-1">
@@ -88,8 +84,7 @@ onTabRefresh(loadData);
       <!-- Empty state -->
       <div
         v-else-if="threads.length === 0"
-        class="flex items-center justify-center h-full"
-      >
+        class="flex items-center justify-center h-full">
         <div class="flex flex-col items-center space-y-4 text-primary">
           <Icon name="material-symbols:chat-bubble" class="text-8xl" />
           <span>还没有任何对话</span>
@@ -105,8 +100,7 @@ onTabRefresh(loadData);
           v-for="thread of threads"
           :key="thread.id"
           class="flex items-center py-4 px-6 shadow-xl shadow-primary/20 rounded-xl space-x-4 bg-white cursor-pointer hover:shadow-2xl transition-shadow group"
-          @click="handleThreadClick(thread)"
-        >
+          @click="handleThreadClick(thread)">
           <div class="flex-1">
             <div class="flex items-center justify-between mb-2">
               <span class="text-lg font-semibold">{{ thread.title }}</span>
@@ -117,8 +111,7 @@ onTabRefresh(loadData);
 
             <div
               v-if="thread.content && thread.content.length > 0"
-              class="text-sm text-gray-600"
-            >
+              class="text-sm text-gray-600">
               {{
                 thread.content[thread.content.length - 1]?.content?.slice(
                   0,

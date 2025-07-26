@@ -24,14 +24,12 @@ const loadVoices = async () => {
   }
 };
 
-// Redirect to login if not authenticated and load data when authenticated
 watch(
   isAuthenticated,
   (authenticated) => {
     if (!authenticated) {
       navigateTo("/login");
     } else {
-      // 用户登录后立即加载数据
       loadVoices();
     }
   },
@@ -46,13 +44,11 @@ const handleFileUpload = async (file: unknown) => {
     return;
   }
 
-  // Check if it's an audio file
   if (!selectedFile.type.startsWith("audio/")) {
     alert("请上传音频文件");
     return;
   }
 
-  // Check file size (limit to 10MB)
   if (selectedFile.size > 10 * 1024 * 1024) {
     alert("文件大小不能超过10MB");
     return;
@@ -62,7 +58,6 @@ const handleFileUpload = async (file: unknown) => {
   uploadProgress.value = 0;
 
   try {
-    // Simulate upload progress
     const progressInterval = setInterval(() => {
       if (uploadProgress.value < 90) {
         uploadProgress.value += 10;
@@ -75,9 +70,9 @@ const handleFileUpload = async (file: unknown) => {
     uploadProgress.value = 100;
 
     if (result) {
-      await loadVoices(); // Refresh the list
+      await loadVoices();
       alert("语音上传成功！");
-      voiceFile.value = null; // Reset file after successful upload
+      voiceFile.value = null;
     }
   } catch (err) {
     console.error("Failed to upload voice:", err);
@@ -88,15 +83,12 @@ const handleFileUpload = async (file: unknown) => {
   }
 };
 
-// 播放语音
 const playVoice = (voiceUrl: string) => {
-  // 停止当前播放的音频
   if (currentAudio.value) {
     currentAudio.value.pause();
     currentAudio.value = null;
   }
 
-  // 创建新的音频对象并播放
   const audio = new Audio(voiceUrl);
   currentAudio.value = audio;
 
@@ -105,13 +97,11 @@ const playVoice = (voiceUrl: string) => {
     alert("播放失败，请重试");
   });
 
-  // 播放结束后清理
   audio.addEventListener("ended", () => {
     currentAudio.value = null;
   });
 };
 
-// 下载语音
 const downloadVoice = (voiceUrl: string, voiceName: string) => {
   const link = document.createElement("a");
   link.href = voiceUrl;
@@ -130,10 +120,8 @@ const formatFileSize = (bytes: number) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 };
 
-// 使用页面刷新 composable 确保切换页面时重新加载数据
 usePageRefresh(loadVoices);
 
-// 监听选项卡刷新事件
 const { onTabRefresh } = useTabNavigation();
 onTabRefresh(loadVoices);
 </script>
@@ -157,8 +145,7 @@ onTabRefresh(loadVoices);
             size="lg"
             class="text-primary"
             :disabled="isUploading"
-            @update:model-value="handleFileUpload"
-          />
+            @update:model-value="handleFileUpload" />
         </div>
 
         <!-- Upload progress -->
@@ -170,8 +157,7 @@ onTabRefresh(loadVoices);
           <div class="w-full bg-gray-200 rounded-full h-2">
             <div
               class="bg-primary h-2 rounded-full transition-all duration-300"
-              :style="{ width: uploadProgress + '%' }"
-            ></div>
+              :style="{ width: uploadProgress + '%' }" />
           </div>
         </div>
 
@@ -180,8 +166,7 @@ onTabRefresh(loadVoices);
           color="error"
           variant="soft"
           :title="error"
-          class="mb-4"
-        />
+          class="mb-4" />
       </div>
     </div>
 
@@ -196,20 +181,18 @@ onTabRefresh(loadVoices);
     <!-- Error state -->
     <div
       v-else-if="error && voices.length === 0"
-      class="flex-1 flex items-center justify-center"
-    >
+      class="flex-1 flex items-center justify-center">
       <div class="flex flex-col items-center space-y-4 text-primary">
         <Icon name="material-symbols:error" class="text-8xl" />
         <span>{{ error }}</span>
-        <UButton @click="loadVoices" variant="outline">重试</UButton>
+        <UButton variant="outline" @click="loadVoices">重试</UButton>
       </div>
     </div>
 
     <!-- Empty state -->
     <div
       v-else-if="voices.length === 0"
-      class="flex-1 flex items-center justify-center"
-    >
+      class="flex-1 flex items-center justify-center">
       <div class="flex flex-col items-center space-y-4 text-primary">
         <Icon name="material-symbols:voice-over-off" class="text-8xl" />
         <span>还没有上传任何语音</span>
@@ -227,14 +210,12 @@ onTabRefresh(loadVoices);
         <div
           v-for="(voice, index) in voices"
           :key="index"
-          class="bg-white rounded-lg p-4 shadow-sm border"
-        >
+          class="bg-white rounded-lg p-4 shadow-sm border">
           <div class="flex items-center justify-between">
             <div class="flex items-center space-x-3">
               <Icon
                 name="material-symbols:audio-file"
-                class="text-2xl text-primary"
-              />
+                class="text-2xl text-primary" />
               <div>
                 <div class="font-medium">{{ voice.name }}</div>
                 <div class="text-sm text-gray-500">
@@ -248,16 +229,14 @@ onTabRefresh(loadVoices);
                 icon="material-symbols:play-arrow"
                 variant="outline"
                 size="sm"
-                @click="playVoice(voice.url)"
-              >
+                @click="playVoice(voice.url)">
                 播放
               </UButton>
               <UButton
                 icon="material-symbols:download"
                 variant="outline"
                 size="sm"
-                @click="downloadVoice(voice.url, voice.name)"
-              >
+                @click="downloadVoice(voice.url, voice.name)">
                 下载
               </UButton>
             </div>

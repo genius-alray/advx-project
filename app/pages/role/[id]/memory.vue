@@ -9,7 +9,6 @@ definePageMeta({
 const route = useRoute();
 const roleId = route.params.id as string;
 
-// 简单的响应式状态
 const error = ref<string | null>(null);
 const {
   data: rolesData,
@@ -26,7 +25,6 @@ const role = computed(() =>
 );
 const knowledge = computed(() => knowledgeData.value || []);
 
-// 直接删除记忆
 const handleDelete = async (knowledgeId: string) => {
   if (!confirm("确定要删除这条记忆吗？")) return;
 
@@ -35,7 +33,7 @@ const handleDelete = async (knowledgeId: string) => {
       method: "DELETE",
     });
 
-    await refreshKnowledge(); // 重新加载数据
+    await refreshKnowledge();
   } catch (err) {
     console.error("Failed to delete knowledge:", err);
     alert("删除记忆失败，请重试");

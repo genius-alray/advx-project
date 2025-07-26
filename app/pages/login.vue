@@ -19,7 +19,6 @@ const handleLogin = async () => {
   }
 };
 
-// Redirect if already authenticated
 watch(
   isAuthenticated,
   (authenticated) => {
