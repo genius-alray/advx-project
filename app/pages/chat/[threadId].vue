@@ -153,6 +153,8 @@ const playMessage = async (message: Message) => {
     if (!voiceCache.has(message.id)) {
       audioUrl = (await synthesizeSpeech(message.content, role.value.voiceId))!;
       voiceCache.set(message.id, audioUrl);
+    } else {
+      audioUrl = voiceCache.get(message.id)!;
     }
 
     if (!audioUrl) {
