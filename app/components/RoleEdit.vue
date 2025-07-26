@@ -143,16 +143,17 @@ const handleSubmit = async () => {
 <template>
   <div class="flex flex-col justify-center items-center p-8 space-y-2">
     <!-- 头像上传按钮 -->
-    <div class="mb-8">
+    <div
+      class="mb-8 text-primary space-y-2 font-bold flex items-center flex-col">
       <UFileUpload
         v-model="avatarFile"
         variant="button"
         accept="image/*"
         icon="material-symbols:account-circle"
         size="xl"
-        class="text-primary"
-        @update:model-value="handleAvatarUpload"
-      />
+        class="text-primary size-10"
+        @update:model-value="handleAvatarUpload" />
+      <span>设置头像</span>
     </div>
 
     <form class="w-full space-y-4" @submit.prevent="handleSubmit">
@@ -162,16 +163,14 @@ const handleSubmit = async () => {
         class="w-full"
         size="xl"
         required
-        :disabled="isCreating"
-      />
+        :disabled="isCreating" />
 
       <UInput
         v-model="form.description"
         placeholder="身份/描述"
         class="w-full"
         size="xl"
-        :disabled="isCreating"
-      />
+        :disabled="isCreating" />
 
       <UTextarea
         v-model="form.background"
@@ -180,8 +179,7 @@ const handleSubmit = async () => {
         :rows="3"
         class="w-full"
         size="xl"
-        :disabled="isCreating"
-      />
+        :disabled="isCreating" />
 
       <!-- 语音选择 -->
       <div class="space-y-2">
@@ -194,8 +192,7 @@ const handleSubmit = async () => {
           size="xl"
           color="primary"
           :disabled="isCreating || isLoadingVoices"
-          :loading="isLoadingVoices"
-        />
+          :loading="isLoadingVoices" />
       </div>
 
       <UAlert
@@ -203,19 +200,15 @@ const handleSubmit = async () => {
         color="error"
         variant="soft"
         :title="formError"
-        class="mb-4"
-      />
+        class="mb-4" />
 
-      <div class="w-full flex mt-8">
+      <div class="w-full flex mt-4 justify-center">
         <UButton
           type="submit"
-          icon="material-symbols:check-circle"
           size="xl"
           :loading="isCreating"
-          :disabled="!form.name.trim() || isCreating"
-          class="w-full"
-        >
-          确认
+          :disabled="!form.name.trim() || isCreating">
+          完成
         </UButton>
       </div>
     </form>
