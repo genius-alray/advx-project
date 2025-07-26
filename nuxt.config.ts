@@ -71,4 +71,13 @@ export default defineNuxtConfig({
       },
     ],
   },
+  app: {
+    head: {
+      title: "我们的回响",
+      htmlAttrs: {
+        lang: "zh",
+      },
+      link: [{ rel: "icon", type: "image/x-icon", href: "/icon.png" }],
+    },
+  },
 });
