@@ -8,29 +8,45 @@ export default defineAppConfig({
       slots: {
         base: "rounded-lg shadow-md shadow-primary/30 font-bold",
       },
+      variants: {
+        size: {
+          xl: "py-4 px-9",
+        },
+      },
     },
     drawer: {
       slots: {
         overlay: "backdrop-blur-sm bg-transparent",
+        content: "backdrop-blur-lg bg-white/20",
       },
     },
     input: {
       slots: {
-        base: "placeholder:text-primary/70 placeholder:font-black p-4",
+        base: "placeholder:text-primary/70 placeholder:font-black inset-shadow-sm/30 inset-shadow-primary",
       },
       variants: {
         variant: {
-          outline: "bg-primary/30  text-primary font-black ring-transparent",
+          outline: "bg-white/50  text-primary font-black ring-transparent",
+        },
+        size: {
+          xl: {
+            base: "p-4 rounded-xl",
+          },
         },
       },
     },
     textarea: {
       slots: {
-        base: "placeholder:text-primary/70 placeholder:font-black",
+        base: "placeholder:text-primary/70 placeholder:font-black inset-shadow-sm/30 inset-shadow-primary",
       },
       variants: {
         variant: {
-          outline: "bg-primary/30 ring-transparent text-primary font-black",
+          outline: "bg-white/30 ring-transparent text-primary font-black",
+        },
+        size: {
+          xl: {
+            base: "p-4 rounded-xl",
+          },
         },
       },
     },
