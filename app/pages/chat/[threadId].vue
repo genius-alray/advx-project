@@ -132,14 +132,6 @@ const goBack = () => {
   navigateTo("/threads");
 };
 
-const retryLastMessage = async () => {
-  if (!lastFailedMessage.value || !thread.value || isSending.value) return;
-
-  newMessage.value = lastFailedMessage.value;
-  lastFailedMessage.value = null;
-  await handleSendMessage();
-};
-
 // 页面初始化 - 加载现有的thread和role数据
 onMounted(async () => {
   isLoading.value = true;
