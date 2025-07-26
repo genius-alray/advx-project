@@ -145,13 +145,40 @@ const checkRecordingSupport = () => {
   );
 };
 
+const getSupportedMimeType = () => {
+  // 按优先级顺序检查支持的 MIME 类型
+  const mimeTypes = [
+    "audio/webm;codecs=opus",
+    "audio/webm",
+    "audio/mp4",
+    "audio/mp4;codecs=mp4a.40.2",
+    "audio/mpeg",
+    "audio/wav",
+    "", // 空字符串表示使用默认格式
+  ];
+
+  for (const mimeType of mimeTypes) {
+    if (mimeType === "" || MediaRecorder.isTypeSupported(mimeType)) {
+      return mimeType;
+    }
+  }
+
+  return ""; // 如果都不支持，使用默认格式
+};
+
 const startRecording = async () => {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-    const recorder = new MediaRecorder(stream, {
-      mimeType: "audio/webm;codecs=opus",
-    });
+    // 获取支持的 MIME 类型
+    const supportedMimeType = getSupportedMimeType();
+    console.log("Using MIME type:", supportedMimeType || "default");
+
+    // 创建 MediaRecorder，如果没有支持的 MIME 类型则使用默认配置
+    const recorderOptions = supportedMimeType
+      ? { mimeType: supportedMimeType }
+      : {};
+    const recorder = new MediaRecorder(stream, recorderOptions);
 
     const chunks: BlobPart[] = [];
 
@@ -162,7 +189,9 @@ const startRecording = async () => {
     };
 
     recorder.onstop = () => {
-      const blob = new Blob(chunks, { type: "audio/webm" });
+      // 使用录制时的实际 MIME 类型
+      const actualMimeType = recorder.mimeType || "audio/wav";
+      const blob = new Blob(chunks, { type: actualMimeType });
       recordedBlob.value = blob;
 
       // Stop all tracks to release microphone
@@ -180,13 +209,7 @@ const startRecording = async () => {
     }, 1000);
   } catch (err) {
     console.error("Failed to start recording:", err);
-    alert(
-      "无法访问麦克风，请检查权限设置" +
-        err +
-        " | " +
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (err as unknown as any).message
-    );
+    alert("无法访问麦克风，请检查权限设置");
   }
 };
 
@@ -237,10 +260,25 @@ const resetRecording = () => {
 const uploadRecording = async () => {
   if (!recordedBlob.value) return;
 
+  // 根据 MIME 类型确定文件扩展名
+  const getFileExtension = (mimeType: string) => {
+    if (mimeType.includes("webm")) return "webm";
+    if (mimeType.includes("mp4")) return "m4a";
+    if (mimeType.includes("mpeg")) return "mp3";
+    if (mimeType.includes("wav")) return "wav";
+    return "webm"; // 默认扩展名
+  };
+
+  const extension = getFileExtension(recordedBlob.value.type);
+
   // Convert blob to File
-  const file = new File([recordedBlob.value], `recording-${Date.now()}.webm`, {
-    type: "audio/webm",
-  });
+  const file = new File(
+    [recordedBlob.value],
+    `recording-${Date.now()}.${extension}`,
+    {
+      type: recordedBlob.value.type,
+    }
+  );
 
   await handleFileUpload(file);
   resetRecording();
